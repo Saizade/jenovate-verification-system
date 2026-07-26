@@ -1,0 +1,159 @@
+const express = require('express');
+const router = express.Router();
+const { body, validationResult } = require('express-validator');
+const { EmployeeSubmission, Employee } = require('../models');
+const auth = require('../middleware/auth');
+const roleCheck = require('../middleware/roleCheck');
+const { verify } = require('../services/verificationEngine');
+const { Op } = require('sequelize');
+
+// All routes are protected
+router.use(auth);
+
+// POST /api/submissions - Employee or admin only
+router.post(
+  '/',
+  roleCheck(['employee', 'admin']),
+  [
+    body('reference_id').notEmpty().withMessage('Reference ID is required').trim(),
+    body('student_name').notEmpty().withMessage('Student name is required').trim(),
+    body('course_name').notEmpty().withMessage('Course name is required').trim(),
+    body('payment_amount')
+      .notEmpty()
+      .withMessage('Payment amount is required')
+      .isNumeric()
+      .withMessage('Payment amount must be a number')
+  ],
+  async (req, res, next) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation failed',
+          errors: errors.array()
+        });
+      }
+
+      const { reference_id, student_name, course_name, payment_amount, joining_date, remarks } = req.body;
+
+      // Create submission
+      const submission = await EmployeeSubmission.create({
+        reference_id,
+        employee_id: req.user.id,
+        student_name,
+        course_name,
+        payment_amount,
+        joining_date: joining_date || null,
+        remarks: remarks || null,
+        is_locked: true
+      });
+
+      // Auto-trigger verification
+      const verificationResult = await verify(reference_id);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Submission created and verification completed',
+        data: {
+          submission,
+          verification: verificationResult
+        }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
+// GET /api/submissions - List submissions
+router.get('/', async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const { search } = req.query;
+
+    // Build where clause
+    const where = {};
+
+    // Employee can only see their own submissions
+    if (req.user.role !== 'admin') {
+      where.employee_id = req.user.id;
+    }
+
+    if (search) {
+      where[Op.or] = [
+        { reference_id: { [Op.like]: `%${search}%` } },
+        { student_name: { [Op.like]: `%${search}%` } }
+      ];
+    }
+
+    const { count: total, rows: submissions } = await EmployeeSubmission.findAndCountAll({
+      where,
+      include: [
+        {
+          model: Employee,
+          as: 'employee',
+          attributes: ['id', 'name', 'email']
+        }
+      ],
+      order: [['created_at', 'DESC']],
+      limit,
+      offset
+    });
+
+    return res.json({
+      success: true,
+      message: 'Submissions retrieved successfully',
+      data: {
+        submissions,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/submissions/:id - Get single submission
+router.get('/:id', async (req, res, next) => {
+  try {
+    const submission = await EmployeeSubmission.findByPk(req.params.id, {
+      include: [
+        {
+          model: Employee,
+          as: 'employee',
+          attributes: ['id', 'name', 'email']
+        }
+      ]
+    });
+
+    if (!submission) {
+      return res.status(404).json({
+        success: false,
+        message: 'Submission not found'
+      });
+    }
+
+    // Non-admin can only see their own
+    if (req.user.role !== 'admin' && submission.employee_id !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied'
+      });
+    }
+
+    return res.json({
+      success: true,
+      message: 'Submission retrieved successfully',
+      data: { submission }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;
