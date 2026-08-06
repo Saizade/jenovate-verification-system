@@ -1,0 +1,7 @@
+node_modules
+*.sqlite
+uploads/
+.env
+.git
+Dockerfile
+.dockerignore

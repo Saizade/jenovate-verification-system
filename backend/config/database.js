@@ -24,7 +24,7 @@ if (process.env.NODE_ENV === 'production' && process.env.DB_HOST) {
 } else {
   sequelize = new Sequelize({
     dialect: 'sqlite',
-    storage: './database.sqlite',
+    storage: process.env.DB_STORAGE || './database.sqlite',
     logging: false
   });
 }
