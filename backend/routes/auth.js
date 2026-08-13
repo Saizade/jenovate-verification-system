@@ -9,7 +9,7 @@ const auth = require('../middleware/auth');
 router.post(
   '/login',
   [
-    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email is required').trim().toLowerCase(),
     body('password').notEmpty().withMessage('Password is required')
   ],
   async (req, res, next) => {
@@ -74,7 +74,7 @@ router.post(
   '/register',
   [
     body('name').notEmpty().withMessage('Name is required').trim(),
-    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email is required').trim().toLowerCase(),
     body('password')
       .isLength({ min: 6 })
       .withMessage('Password must be at least 6 characters')

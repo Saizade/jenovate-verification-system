@@ -32,7 +32,7 @@ router.post(
   '/',
   [
     body('name').notEmpty().withMessage('Name is required').trim(),
-    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('email').isEmail().withMessage('Valid email is required').trim().toLowerCase(),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('role').isIn(['admin', 'employee']).withMessage('Role must be admin or employee')
   ],
@@ -87,7 +87,7 @@ router.put(
   '/:id',
   [
     body('name').optional().notEmpty().withMessage('Name cannot be empty').trim(),
-    body('email').optional().isEmail().withMessage('Valid email required').normalizeEmail(),
+    body('email').optional().isEmail().withMessage('Valid email required').trim().toLowerCase(),
     body('password').optional().isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),
     body('role').optional().isIn(['admin', 'employee']).withMessage('Role must be admin or employee')
   ],

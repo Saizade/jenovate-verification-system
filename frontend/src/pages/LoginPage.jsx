@@ -13,6 +13,7 @@ export default function LoginPage() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -33,7 +34,7 @@ export default function LoginPage() {
         employee: '/employee/dashboard',
         student: '/student/register',
       };
-      navigate(roleRedirects[user.role] || '/dashboard', { replace: true });
+      navigate(roleRedirects[user.role] || '/admin/dashboard', { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -46,12 +47,17 @@ export default function LoginPage() {
         employee: '/employee/dashboard',
         student: '/student/register',
       };
-      navigate(roleRedirects[userData.role] || '/dashboard', { replace: true });
+      navigate(roleRedirects[userData.role] || '/admin/dashboard', { replace: true });
     } catch (error) {
       // Error toast is handled by AuthContext
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fillDemoAccount = (email, password) => {
+    setValue('email', email, { shouldValidate: true });
+    setValue('password', password, { shouldValidate: true });
   };
 
   return (
@@ -166,6 +172,27 @@ export default function LoginPage() {
                   {errors.password.message}
                 </p>
               )}
+            </div>
+
+            {/* Quick Demo Login Credentials */}
+            <div className="pt-2">
+              <p className="text-xs font-medium text-gray-400 mb-2">Quick Demo Fill:</p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => fillDemoAccount('admin@jenovate.com', 'Admin@123')}
+                  className="py-1.5 px-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-lg text-xs text-indigo-300 font-medium transition text-center"
+                >
+                  Admin Demo
+                </button>
+                <button
+                  type="button"
+                  onClick={() => fillDemoAccount('employee@jenovate.com', 'Employee@123')}
+                  className="py-1.5 px-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-lg text-xs text-emerald-300 font-medium transition text-center"
+                >
+                  Employee Demo
+                </button>
+              </div>
             </div>
 
             {/* Login Button */}
