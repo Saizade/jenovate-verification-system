@@ -1,20 +1,4 @@
-import { HiUser, HiUsers, HiMapPin, HiAcademicCap, HiCurrencyRupee, HiDocumentText, HiCheckCircle, HiXCircle } from 'react-icons/hi2';
-
-const courseLabels = {
-  java_fullstack: 'Java Full Stack',
-  python_fullstack: 'Python Full Stack',
-  data_science: 'Data Science',
-  mern_stack: 'MERN Stack',
-  digital_marketing: 'Digital Marketing',
-  ui_ux_design: 'UI/UX Design',
-};
-
-const paymentModeLabels = {
-  online: 'Online / UPI',
-  bank_transfer: 'Bank Transfer',
-  cash: 'Cash',
-  cheque: 'Cheque',
-};
+import { HiUser, HiAcademicCap, HiCurrencyRupee } from 'react-icons/hi2';
 
 function ReviewSection({ icon: Icon, title, items, iconColor = 'text-primary-500' }) {
   return (
@@ -25,7 +9,7 @@ function ReviewSection({ icon: Icon, title, items, iconColor = 'text-primary-500
         </div>
         <h4 className="font-semibold text-gray-800">{title}</h4>
       </div>
-      <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+      <dl className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
         {items.map(({ label, value }, idx) => (
           <div key={idx}>
             <dt className="text-xs text-gray-400 font-medium uppercase tracking-wider">{label}</dt>
@@ -44,55 +28,40 @@ export default function ReviewSubmit({ watch }) {
 
   const formatCurrency = (amount) => {
     const num = Number(amount);
-    if (!num) return '—';
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(num);
+    if (isNaN(num)) return '—';
+    return `₹${num.toLocaleString('en-IN')}`;
   };
 
-  const personalItems = [
-    { label: 'Full Name', value: data.fullName },
-    { label: 'Date of Birth', value: data.dateOfBirth },
-    { label: 'Gender', value: data.gender ? data.gender.charAt(0).toUpperCase() + data.gender.slice(1) : '' },
-    { label: 'Mobile', value: data.mobile },
-    { label: 'Email', value: data.email },
-  ];
-
-  const familyItems = [
-    { label: "Father's Name", value: data.fatherName },
-    { label: "Mother's Name", value: data.motherName },
-    { label: 'Siblings', value: data.siblings?.toString() },
-    { label: 'Guardian Name', value: data.guardianName },
-    { label: 'Guardian Phone', value: data.guardianPhone },
-  ];
-
-  const addressItems = [
-    { label: 'State', value: data.state },
-    { label: 'City', value: data.city },
-    { label: 'Address', value: data.address },
-    { label: 'PIN Code', value: data.pinCode },
+  const generalItems = [
+    { label: 'Date', value: data.date },
+    { label: 'Remarks (Status)', value: data.remarks },
+    { label: 'Academic Remarks', value: data.academicRemarks },
+    { label: 'Counselor Name', value: data.counselorName },
+    { label: 'Student Name', value: data.fullName },
+    { label: 'Phone No.', value: data.phoneNo },
+    { label: 'WhatsApp Number', value: data.whatsappNumber },
+    { label: 'E-mail', value: data.email },
   ];
 
   const academicItems = [
-    { label: 'Qualification', value: data.qualification },
-    { label: 'Institution', value: data.previousInstitution },
-    { label: 'Course', value: courseLabels[data.course] || data.course },
-    { label: 'Year of Passing', value: data.yearOfPassing?.toString() },
+    { label: 'College Name', value: data.collegeName },
+    { label: 'State', value: data.state },
+    { label: 'Department', value: data.department },
+    { label: 'Course Opted', value: data.courseOpted },
+    { label: 'Primary Course', value: data.primaryCourse },
+    { label: 'Secondary Course', value: data.secondaryCourse },
+    { label: 'Tertiary Course', value: data.tertiaryCourse },
+    { label: 'Type of Pack', value: data.typeOfPack },
   ];
 
   const paymentItems = [
-    { label: 'Total Fees', value: formatCurrency(data.totalFees) },
-    { label: 'Amount Paid', value: formatCurrency(data.amountPaid) },
-    { label: 'Payment Mode', value: paymentModeLabels[data.paymentMode] || data.paymentMode },
-    { label: 'Transaction ID', value: data.transactionId },
-  ];
-
-  const documents = [
-    { label: 'Aadhaar Card', value: data.aadhaarDoc },
-    { label: 'Passport Photo', value: data.photoDoc },
-    { label: 'Payment Receipt', value: data.receiptDoc },
+    { label: 'Month Opted', value: data.monthOpted },
+    { label: 'Type of Course', value: data.typeOfCourse },
+    { label: 'Payment Mode', value: data.paymentMode },
+    { label: 'Program Price', value: formatCurrency(data.programPrice) },
+    { label: 'Amount Received', value: formatCurrency(data.amountReceived) },
+    { label: 'Pending Amount', value: formatCurrency(data.pendingAmount) },
+    { label: 'Revenue Channel', value: data.revenueChannel },
   ];
 
   return (
@@ -100,7 +69,7 @@ export default function ReviewSubmit({ watch }) {
       <div className="mb-2">
         <h3 className="text-lg font-semibold text-gray-800">Review & Submit</h3>
         <p className="text-sm text-gray-500 mt-1">
-          Please review all the information carefully before submitting your registration.
+          Please review all details before completing student registration.
         </p>
       </div>
 
@@ -108,47 +77,17 @@ export default function ReviewSubmit({ watch }) {
       <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
         <span className="text-amber-500 text-lg mt-0.5">⚠️</span>
         <div>
-          <p className="text-sm font-medium text-amber-800">Please verify all details</p>
+          <p className="text-sm font-medium text-amber-800">Please verify all student details</p>
           <p className="text-xs text-amber-600 mt-0.5">
-            Once submitted, your registration will be sent for verification. Incorrect information may delay the process.
+            Once submitted, your student registration will be locked and logged for verification.
           </p>
         </div>
       </div>
 
       {/* Review Sections */}
-      <ReviewSection icon={HiUser} title="Personal Information" items={personalItems} iconColor="text-blue-500" />
-      <ReviewSection icon={HiUsers} title="Family Information" items={familyItems} iconColor="text-violet-500" />
-      <ReviewSection icon={HiMapPin} title="Address Information" items={addressItems} iconColor="text-green-500" />
-      <ReviewSection icon={HiAcademicCap} title="Academic Information" items={academicItems} iconColor="text-orange-500" />
-      <ReviewSection icon={HiCurrencyRupee} title="Payment Information" items={paymentItems} iconColor="text-emerald-500" />
-
-      {/* Documents */}
-      <div className="p-5 bg-white rounded-xl border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-2 mb-4 pb-3 border-b border-gray-100">
-          <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-pink-500">
-            <HiDocumentText className="w-4.5 h-4.5" />
-          </div>
-          <h4 className="font-semibold text-gray-800">Uploaded Documents</h4>
-        </div>
-        <div className="space-y-2">
-          {documents.map(({ label, value }, idx) => (
-            <div key={idx} className="flex items-center justify-between py-2 px-3 rounded-lg bg-gray-50">
-              <span className="text-sm text-gray-700 font-medium">{label}</span>
-              {value ? (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-green-600">
-                  <HiCheckCircle className="w-4 h-4" />
-                  {typeof value === 'object' && value.name ? value.name : 'Uploaded'}
-                </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 text-xs font-medium text-gray-400">
-                  <HiXCircle className="w-4 h-4" />
-                  Not uploaded
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </div>
+      <ReviewSection icon={HiUser} title="General & Contact Info" items={generalItems} iconColor="text-blue-500" />
+      <ReviewSection icon={HiAcademicCap} title="Institution & Academic Info" items={academicItems} iconColor="text-orange-500" />
+      <ReviewSection icon={HiCurrencyRupee} title="Payment & Revenue Details" items={paymentItems} iconColor="text-emerald-500" />
     </div>
   );
 }

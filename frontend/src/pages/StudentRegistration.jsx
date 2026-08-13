@@ -5,11 +5,8 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 
 import PersonalInfo from '../components/forms/FormSteps/PersonalInfo';
-import FamilyInfo from '../components/forms/FormSteps/FamilyInfo';
-import AddressInfo from '../components/forms/FormSteps/AddressInfo';
 import AcademicInfo from '../components/forms/FormSteps/AcademicInfo';
 import PaymentInfo from '../components/forms/FormSteps/PaymentInfo';
-import DocumentUpload from '../components/forms/FormSteps/DocumentUpload';
 import ReviewSubmit from '../components/forms/FormSteps/ReviewSubmit';
 
 import Button from '../components/ui/Button';
@@ -17,12 +14,9 @@ import Card from '../components/ui/Card';
 import { HiCheckCircle, HiArrowRight, HiArrowLeft } from 'react-icons/hi2';
 
 const STEPS = [
-  'Personal Info',
-  'Family Info',
-  'Address Info',
-  'Academic Info',
-  'Payment Info',
-  'Upload Docs',
+  'General & Contact Info',
+  'Institution & Academic',
+  'Payment & Revenue Details',
   'Review & Submit'
 ];
 
@@ -42,56 +36,45 @@ export default function StudentRegistration() {
   } = useForm({
     mode: 'onChange',
     defaultValues: {
+      remarks: '',
+      date: new Date().toLocaleDateString('en-GB').replace(/\//g, '.'),
+      academicRemarks: '',
+      counselorName: '',
       fullName: '',
-      dateOfBirth: '',
-      gender: '',
-      mobile: '',
+      phoneNo: '',
+      whatsappNumber: '',
       email: '',
-      fatherName: '',
-      motherName: '',
-      siblings: 0,
-      guardianName: '',
-      guardianPhone: '',
+      collegeName: '',
       state: '',
-      city: '',
-      address: '',
-      pinCode: '',
-      qualification: '',
-      previousInstitution: '',
-      course: '',
-      yearOfPassing: '',
-      totalFees: 0,
-      amountPaid: 0,
+      department: '',
+      courseOpted: '',
+      primaryCourse: '',
+      secondaryCourse: '',
+      tertiaryCourse: '',
+      typeOfPack: '',
+      monthOpted: '',
+      typeOfCourse: '',
       paymentMode: '',
-      transactionId: '',
-      aadhaarDoc: null,
-      photoDoc: null,
-      receiptDoc: null
+      programPrice: '',
+      amountReceived: '',
+      pendingAmount: '',
+      revenueChannel: ''
     }
   });
 
   const nextStep = async () => {
-    // Validate fields for current step
     let fieldsToValidate = [];
     if (currentStep === 0) {
-      fieldsToValidate = ['fullName', 'dateOfBirth', 'gender', 'mobile', 'email'];
+      fieldsToValidate = ['fullName'];
     } else if (currentStep === 1) {
-      fieldsToValidate = ['fatherName', 'motherName', 'siblings'];
-    } else if (currentStep === 2) {
-      fieldsToValidate = ['state', 'city', 'address', 'pinCode'];
-    } else if (currentStep === 3) {
-      fieldsToValidate = ['qualification', 'previousInstitution', 'course', 'yearOfPassing'];
-    } else if (currentStep === 4) {
-      fieldsToValidate = ['totalFees', 'amountPaid', 'paymentMode', 'transactionId'];
-    } else if (currentStep === 5) {
-      fieldsToValidate = ['aadhaarDoc', 'photoDoc', 'receiptDoc'];
+      fieldsToValidate = ['courseOpted'];
     }
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
       setCurrentStep((prev) => prev + 1);
     } else {
-      toast.error('Please fix validation errors before proceeding.');
+      toast.error('Please fix required validation errors before proceeding.');
     }
   };
 
@@ -102,49 +85,7 @@ export default function StudentRegistration() {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const formData = new FormData();
-      
-      // Append standard text fields
-      formData.append('fullName', data.fullName);
-      formData.append('dateOfBirth', data.dateOfBirth);
-      formData.append('gender', data.gender);
-      formData.append('mobile', data.mobile);
-      formData.append('email', data.email);
-      formData.append('fatherName', data.fatherName);
-      formData.append('motherName', data.motherName);
-      formData.append('siblings', data.siblings);
-      formData.append('guardianName', data.guardianName);
-      formData.append('guardianPhone', data.guardianPhone);
-      formData.append('state', data.state);
-      formData.append('city', data.city);
-      formData.append('address', data.address);
-      formData.append('pinCode', data.pinCode);
-      formData.append('qualification', data.qualification);
-      formData.append('previousInstitution', data.previousInstitution);
-      formData.append('course', data.course);
-      formData.append('yearOfPassing', data.yearOfPassing);
-      formData.append('totalFees', data.totalFees);
-      formData.append('amountPaid', data.amountPaid);
-      formData.append('paymentMode', data.paymentMode);
-      formData.append('transactionId', data.transactionId);
-
-      // Append files
-      if (data.aadhaarDoc) {
-        formData.append('aadhaarDoc', data.aadhaarDoc);
-      }
-      if (data.photoDoc) {
-        formData.append('photoDoc', data.photoDoc);
-      }
-      if (data.receiptDoc) {
-        formData.append('receiptDoc', data.receiptDoc);
-      }
-
-      // API Call
-      const response = await api.post('/students', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await api.post('/students', data);
 
       if (response.data.success) {
         setSuccessData(response.data.data);
@@ -165,16 +106,10 @@ export default function StudentRegistration() {
       case 0:
         return <PersonalInfo register={register} errors={errors} watch={watch} />;
       case 1:
-        return <FamilyInfo register={register} errors={errors} watch={watch} />;
-      case 2:
-        return <AddressInfo register={register} errors={errors} watch={watch} />;
-      case 3:
         return <AcademicInfo register={register} errors={errors} watch={watch} setValue={setValue} />;
-      case 4:
+      case 2:
         return <PaymentInfo register={register} errors={errors} watch={watch} setValue={setValue} />;
-      case 5:
-        return <DocumentUpload register={register} errors={errors} watch={watch} setValue={setValue} />;
-      case 6:
+      case 3:
         return <ReviewSubmit watch={watch} />;
       default:
         return null;

@@ -6,14 +6,11 @@ import api from '../services/api';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Table from '../components/ui/Table';
-import Badge from '../components/ui/Badge';
-import Modal from '../components/ui/Modal';
 import Skeleton from '../components/ui/Skeleton';
 import StatsCard from '../components/ui/StatsCard';
 
 import {
-  HiDocumentPlus, HiClipboardDocumentList, HiCheckBadge,
-  HiExclamationTriangle, HiCheckCircle, HiXCircle, HiMiniReceiptPercent
+  HiDocumentPlus, HiClipboardDocumentList, HiCheckCircle
 } from 'react-icons/hi2';
 
 const COURSE_OPTIONS = [
@@ -27,27 +24,44 @@ const COURSE_OPTIONS = [
 
 export default function EmployeeDashboard() {
   const [submissions, setSubmissions] = useState([]);
-  const [stats, setStats] = useState({ total: 0, matches: 0, mismatches: 0 });
+  const [totalSubmissions, setTotalSubmissions] = useState(0);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [showResultModal, setShowResultModal] = useState(false);
-  const [verificationResult, setVerificationResult] = useState(null);
 
   const {
     register,
     handleSubmit,
     reset,
+    watch,
+    setValue,
     formState: { errors }
   } = useForm({
     defaultValues: {
-      referenceId: '',
+      date: '',
       studentName: '',
-      courseName: '',
-      paymentAmount: '',
-      joiningDate: '',
+      referenceId: '',
+      whatsappNo: '',
+      email: '',
+      courseOpted: '',
+      feesPaid: '',
+      programPrice: '',
+      pendingAmount: '',
       remarks: ''
     }
   });
+
+  // Auto-calculate pending amount
+  const watchProgramPrice = watch('programPrice');
+  const watchFeesPaid = watch('feesPaid');
+
+  useEffect(() => {
+    const price = parseFloat(watchProgramPrice) || 0;
+    const paid = parseFloat(watchFeesPaid) || 0;
+    if (price > 0) {
+      const pending = Math.max(0, price - paid);
+      setValue('pendingAmount', pending.toString());
+    }
+  }, [watchProgramPrice, watchFeesPaid, setValue]);
 
   const fetchEmployeeData = async () => {
     try {
@@ -55,27 +69,7 @@ export default function EmployeeDashboard() {
       const res = await api.get('/submissions');
       const data = res.data.data.submissions || [];
       setSubmissions(data);
-
-      // Calculate stats locally from submissions (or endpoint if available)
-      let matches = 0;
-      let mismatches = 0;
-      
-      // We also query verification results to show status
-      const verificationsRes = await api.get('/verification');
-      const verifications = verificationsRes.data.data.results || [];
-      const verMap = new Map(verifications.map((v) => [v.reference_id, v.match_status]));
-
-      data.forEach((sub) => {
-        const status = verMap.get(sub.reference_id);
-        if (status === 'MATCH') matches++;
-        if (status === 'MISMATCH') mismatches++;
-      });
-
-      setStats({
-        total: data.length,
-        matches,
-        mismatches
-      });
+      setTotalSubmissions(data.length);
     } catch (err) {
       console.error(err);
       toast.error('Failed to load employee submissions.');
@@ -92,20 +86,22 @@ export default function EmployeeDashboard() {
     setSubmitting(true);
     try {
       const payload = {
+        date: data.date,
         reference_id: data.referenceId,
         student_name: data.studentName,
-        course_name: data.courseName,
-        payment_amount: parseFloat(data.paymentAmount),
-        joining_date: data.joiningDate,
+        whatsapp_no: data.whatsappNo,
+        email: data.email,
+        course_opted: data.courseOpted,
+        fees_paid: parseFloat(data.feesPaid),
+        program_price: data.programPrice ? parseFloat(data.programPrice) : null,
+        pending_amount: data.pendingAmount ? parseFloat(data.pendingAmount) : null,
         remarks: data.remarks
       };
 
       const res = await api.post('/submissions', payload);
 
       if (res.data.success) {
-        toast.success('Submission saved and verified successfully!');
-        setVerificationResult(res.data.data.verificationResult);
-        setShowResultModal(true);
+        toast.success('Submission saved and locked successfully!');
         reset();
         fetchEmployeeData();
       } else {
@@ -131,11 +127,7 @@ export default function EmployeeDashboard() {
     return (
       <div className="space-y-6">
         <Skeleton variant="text" className="w-48 h-8" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          <Skeleton variant="card" className="h-32" />
-          <Skeleton variant="card" className="h-32" />
-          <Skeleton variant="card" className="h-32" />
-        </div>
+        <Skeleton variant="card" className="h-28" />
         <Skeleton variant="card" className="h-96" />
       </div>
     );
@@ -148,32 +140,18 @@ export default function EmployeeDashboard() {
           Employee Verification Portal
         </h1>
         <p className="text-gray-500 text-sm mt-1">
-          Perform immediate cross-verification of student registrations to eliminate enrollments fraud.
+          Submit and manage student verification details seamlessly.
         </p>
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="max-w-xs">
         <StatsCard
           title="My Submissions"
-          value={stats.total}
+          value={totalSubmissions}
           icon={HiClipboardDocumentList}
           color="indigo"
           description="Total submissions entered"
-        />
-        <StatsCard
-          title="Matching Entries"
-          value={stats.matches}
-          icon={HiCheckBadge}
-          color="emerald"
-          description="Perfect matches with student details"
-        />
-        <StatsCard
-          title="Mismatched Entries"
-          value={stats.mismatches}
-          icon={HiExclamationTriangle}
-          color="rose"
-          description="Submissions with details mismatched"
         />
       </div>
 
@@ -181,10 +159,39 @@ export default function EmployeeDashboard() {
         {/* Verification Form */}
         <Card title="New Verification Form" subtitle="Enter student transaction details" className="p-5 lg:col-span-1 border border-gray-100 bg-white shadow-md rounded-2xl">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            {/* Date */}
+            <div>
+              <label htmlFor="emp-date" className="form-label text-xs font-bold uppercase text-gray-500">
+                Date <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="emp-date"
+                type="date"
+                className={`form-input mt-1 ${errors.date ? 'border-red-300' : ''}`}
+                {...register('date', { required: 'Date is required' })}
+              />
+              {errors.date && <p className="form-error text-xs mt-1 text-red-500">{errors.date.message}</p>}
+            </div>
+
+            {/* Student Name */}
+            <div>
+              <label htmlFor="emp-student-name" className="form-label text-xs font-bold uppercase text-gray-500">
+                Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="emp-student-name"
+                type="text"
+                placeholder="Full student name"
+                className={`form-input mt-1 ${errors.studentName ? 'border-red-300' : ''}`}
+                {...register('studentName', { required: 'Name is required' })}
+              />
+              {errors.studentName && <p className="form-error text-xs mt-1 text-red-500">{errors.studentName.message}</p>}
+            </div>
+
             {/* Reference ID */}
             <div>
               <label htmlFor="emp-ref-id" className="form-label text-xs font-bold uppercase text-gray-500">
-                Reference ID <span className="text-red-500">*</span>
+                Ref ID <span className="text-red-500">*</span>
               </label>
               <input
                 id="emp-ref-id"
@@ -202,30 +209,50 @@ export default function EmployeeDashboard() {
               {errors.referenceId && <p className="form-error text-xs mt-1 text-red-500">{errors.referenceId.message}</p>}
             </div>
 
-            {/* Student Name */}
+            {/* WhatsApp No */}
             <div>
-              <label htmlFor="emp-student-name" className="form-label text-xs font-bold uppercase text-gray-500">
-                Student Name <span className="text-red-500">*</span>
+              <label htmlFor="emp-whatsapp" className="form-label text-xs font-bold uppercase text-gray-500">
+                WhatsApp No
               </label>
               <input
-                id="emp-student-name"
-                type="text"
-                placeholder="Full student name"
-                className={`form-input mt-1 ${errors.studentName ? 'border-red-300' : ''}`}
-                {...register('studentName', { required: 'Student name is required' })}
+                id="emp-whatsapp"
+                type="tel"
+                placeholder="e.g. 9876543210"
+                className={`form-input mt-1 ${errors.whatsappNo ? 'border-red-300' : ''}`}
+                {...register('whatsappNo')}
               />
-              {errors.studentName && <p className="form-error text-xs mt-1 text-red-500">{errors.studentName.message}</p>}
+              {errors.whatsappNo && <p className="form-error text-xs mt-1 text-red-500">{errors.whatsappNo.message}</p>}
             </div>
 
-            {/* Course Name */}
+            {/* Email */}
+            <div>
+              <label htmlFor="emp-email" className="form-label text-xs font-bold uppercase text-gray-500">
+                Email
+              </label>
+              <input
+                id="emp-email"
+                type="email"
+                placeholder="student@example.com"
+                className={`form-input mt-1 ${errors.email ? 'border-red-300' : ''}`}
+                {...register('email', {
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: 'Invalid email format'
+                  }
+                })}
+              />
+              {errors.email && <p className="form-error text-xs mt-1 text-red-500">{errors.email.message}</p>}
+            </div>
+
+            {/* Course Opted */}
             <div>
               <label htmlFor="emp-course" className="form-label text-xs font-bold uppercase text-gray-500">
-                Course Name <span className="text-red-500">*</span>
+                Course Opt <span className="text-red-500">*</span>
               </label>
               <select
                 id="emp-course"
-                className={`form-input mt-1 ${errors.courseName ? 'border-red-300' : ''}`}
-                {...register('courseName', { required: 'Course name is required' })}
+                className={`form-input mt-1 ${errors.courseOpted ? 'border-red-300' : ''}`}
+                {...register('courseOpted', { required: 'Course is required' })}
               >
                 <option value="">Select Course</option>
                 {COURSE_OPTIONS.map((opt) => (
@@ -234,39 +261,59 @@ export default function EmployeeDashboard() {
                   </option>
                 ))}
               </select>
-              {errors.courseName && <p className="form-error text-xs mt-1 text-red-500">{errors.courseName.message}</p>}
+              {errors.courseOpted && <p className="form-error text-xs mt-1 text-red-500">{errors.courseOpted.message}</p>}
             </div>
 
-            {/* Payment Amount */}
+            {/* Fees Paid */}
             <div>
-              <label htmlFor="emp-payment" className="form-label text-xs font-bold uppercase text-gray-500">
-                Payment Amount (₹) <span className="text-red-500">*</span>
+              <label htmlFor="emp-fees" className="form-label text-xs font-bold uppercase text-gray-500">
+                Fees Paid (₹) <span className="text-red-500">*</span>
               </label>
               <input
-                id="emp-payment"
+                id="emp-fees"
                 type="number"
-                placeholder="Enter paid fees"
-                className={`form-input mt-1 ${errors.paymentAmount ? 'border-red-300' : ''}`}
-                {...register('paymentAmount', {
-                  required: 'Payment amount is required',
-                  min: { value: 0, message: 'Must be positive value' }
+                placeholder="Enter fees paid"
+                className={`form-input mt-1 ${errors.feesPaid ? 'border-red-300' : ''}`}
+                {...register('feesPaid', {
+                  required: 'Fees paid is required',
+                  min: { value: 0, message: 'Must be a positive value' }
                 })}
               />
-              {errors.paymentAmount && <p className="form-error text-xs mt-1 text-red-500">{errors.paymentAmount.message}</p>}
+              {errors.feesPaid && <p className="form-error text-xs mt-1 text-red-500">{errors.feesPaid.message}</p>}
             </div>
 
-            {/* Joining Date */}
+            {/* Program Price */}
             <div>
-              <label htmlFor="emp-joining" className="form-label text-xs font-bold uppercase text-gray-500">
-                Joining Date <span className="text-red-500">*</span>
+              <label htmlFor="emp-program-price" className="form-label text-xs font-bold uppercase text-gray-500">
+                Program Price (₹)
               </label>
               <input
-                id="emp-joining"
-                type="date"
-                className={`form-input mt-1 ${errors.joiningDate ? 'border-red-300' : ''}`}
-                {...register('joiningDate', { required: 'Joining date is required' })}
+                id="emp-program-price"
+                type="number"
+                placeholder="Total program price"
+                className={`form-input mt-1 ${errors.programPrice ? 'border-red-300' : ''}`}
+                {...register('programPrice', {
+                  min: { value: 0, message: 'Must be a positive value' }
+                })}
               />
-              {errors.joiningDate && <p className="form-error text-xs mt-1 text-red-500">{errors.joiningDate.message}</p>}
+              {errors.programPrice && <p className="form-error text-xs mt-1 text-red-500">{errors.programPrice.message}</p>}
+            </div>
+
+            {/* Pending Amount */}
+            <div>
+              <label htmlFor="emp-pending" className="form-label text-xs font-bold uppercase text-gray-500">
+                Pending Amount (₹)
+              </label>
+              <input
+                id="emp-pending"
+                type="number"
+                placeholder="Auto-calculated"
+                className="form-input mt-1 bg-gray-50"
+                {...register('pendingAmount', {
+                  min: { value: 0, message: 'Must be a positive value' }
+                })}
+              />
+              <p className="text-[10px] text-gray-400 mt-0.5">Auto-calculated from Program Price − Fees Paid</p>
             </div>
 
             {/* Remarks */}
@@ -289,7 +336,7 @@ export default function EmployeeDashboard() {
               className="w-full flex items-center justify-center gap-2 mt-4 bg-gradient-to-r from-primary-950 to-primary-800 hover:from-primary-900"
             >
               <HiDocumentPlus className="w-5 h-5" />
-              Verify & Lock Submission
+              Submit Details
             </Button>
           </form>
         </Card>
@@ -297,95 +344,19 @@ export default function EmployeeDashboard() {
         {/* Previous Submissions */}
         <Card title="My Verification Records" subtitle="Previous entries submitted by you" className="p-5 lg:col-span-2 border border-gray-100 bg-white shadow-md rounded-2xl">
           <Table
-            headers={['Ref ID', 'Name', 'Course', 'Paid Amount', 'Submitted At']}
+            headers={['Date', 'Ref ID', 'Name', 'Course Opt', 'Fees Paid', 'Pending', 'Submitted At']}
             rows={submissions.map((sub) => [
-              <span className="font-mono text-xs font-bold text-gray-800" key={sub.id}>{sub.reference_id}</span>,
-              <span className="font-semibold text-gray-800" key={sub.id}>{sub.student_name}</span>,
-              <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded" key={sub.id}>{sub.course_name}</span>,
-              <span className="font-bold text-gray-800" key={sub.id}>{formatCurrency(sub.payment_amount)}</span>,
-              <span className="text-xs text-gray-400" key={sub.id}>{new Date(sub.created_at).toLocaleDateString()}</span>
+              <span className="text-xs text-gray-600" key={`date-${sub.id}`}>{sub.date || '—'}</span>,
+              <span className="font-mono text-xs font-bold text-gray-800" key={`ref-${sub.id}`}>{sub.reference_id}</span>,
+              <span className="font-semibold text-gray-800" key={`name-${sub.id}`}>{sub.student_name}</span>,
+              <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded" key={`course-${sub.id}`}>{sub.course_opted}</span>,
+              <span className="font-bold text-gray-800" key={`fees-${sub.id}`}>{formatCurrency(sub.fees_paid)}</span>,
+              <span className="text-xs font-semibold text-amber-600" key={`pending-${sub.id}`}>{sub.pending_amount ? formatCurrency(sub.pending_amount) : '—'}</span>,
+              <span className="text-xs text-gray-400" key={`at-${sub.id}`}>{new Date(sub.created_at).toLocaleDateString()}</span>
             ])}
           />
         </Card>
       </div>
-
-      {/* Result Verification Modal */}
-      {showResultModal && verificationResult && (
-        <Modal
-          isOpen={showResultModal}
-          onClose={() => setShowResultModal(false)}
-          title="Instant Verification Result"
-          size="md"
-        >
-          <div className="space-y-6">
-            <div className="text-center">
-              {verificationResult.match_status === 'MATCH' ? (
-                <div className="mx-auto w-16 h-16 bg-emerald-50 text-emerald-500 rounded-full flex items-center justify-center mb-3">
-                  <HiCheckCircle className="w-10 h-10" />
-                </div>
-              ) : (
-                <div className="mx-auto w-16 h-16 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mb-3">
-                  <HiXCircle className="w-10 h-10" />
-                </div>
-              )}
-
-              <h3 className="text-xl font-bold text-gray-900">
-                Verification: {verificationResult.match_status}
-              </h3>
-              <p className="text-xs text-gray-400 font-mono mt-1">
-                Ref ID: {verificationResult.reference_id}
-              </p>
-            </div>
-
-            {/* Field level comparisons */}
-            <div className="bg-gray-50 rounded-xl p-4 border border-gray-100 space-y-2">
-              <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-2">
-                Field Breakdown
-              </h4>
-
-              {Object.entries(verificationResult.field_details).map(([field, details]) => (
-                <div key={field} className="flex items-center justify-between py-1.5 border-b border-gray-200/50 last:border-0">
-                  <div>
-                    <span className="text-xs font-semibold text-gray-500 capitalize">
-                      {field.replace('_', ' ')}
-                    </span>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-gray-700 mt-0.5">
-                      <span className="text-gray-400 font-normal">Student:</span> {String(details.student_value)}
-                      <span className="text-gray-300">|</span>
-                      <span className="text-gray-400 font-normal">Employee:</span> {String(details.employee_value)}
-                    </div>
-                  </div>
-                  {details.match ? (
-                    <span className="text-emerald-500 text-sm">✅</span>
-                  ) : (
-                    <span className="text-rose-500 text-sm">❌</span>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Warning block for mismatch */}
-            {verificationResult.match_status === 'MISMATCH' && (
-              <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-900">
-                <HiExclamationTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold">Flagged for Audit</p>
-                  <p className="text-xs text-amber-700 mt-0.5">
-                    This mismatch will automatically generate a fraud alert. Difference Amount:{' '}
-                    <strong>{formatCurrency(verificationResult.difference_amount)}</strong>
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div className="flex justify-end pt-4 border-t border-gray-100">
-              <Button variant="primary" onClick={() => setShowResultModal(false)}>
-                Acknowledge & Close
-              </Button>
-            </div>
-          </div>
-        </Modal>
-      )}
     </div>
   );
 }

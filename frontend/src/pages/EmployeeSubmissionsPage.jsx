@@ -157,17 +157,21 @@ export default function EmployeeSubmissionsPage() {
         ) : submissions.length > 0 ? (
           <div className="space-y-4">
             <Table
-              headers={['Ref ID', 'Student Name', 'Course Name', 'Entered Amount', 'Joining Date', 'Coordinator', 'Remarks']}
+              headers={['Date', 'Ref ID', 'Name', 'WhatsApp', 'Email', 'Course Opt', 'Fees Paid', 'Program Price', 'Pending', 'Coordinator', 'Remarks']}
               rows={submissions.map((sub) => [
-                <span className="font-mono text-xs font-bold text-gray-800" key={sub.id}>{sub.reference_id}</span>,
-                <span className="font-semibold text-gray-850" key={sub.id}>{sub.student_name}</span>,
-                <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded" key={sub.id}>{sub.course_name}</span>,
-                <span className="font-bold text-gray-800" key={sub.id}>{formatCurrency(sub.payment_amount)}</span>,
-                <span className="text-xs text-gray-400" key={sub.id}>{sub.joining_date}</span>,
-                <span className="text-xs font-semibold text-primary-950 bg-primary-50 px-2 py-1 rounded" key={sub.id}>
+                <span className="text-xs text-gray-600" key={`date-${sub.id}`}>{sub.date || '—'}</span>,
+                <span className="font-mono text-xs font-bold text-gray-800" key={`ref-${sub.id}`}>{sub.reference_id}</span>,
+                <span className="font-semibold text-gray-850" key={`name-${sub.id}`}>{sub.student_name}</span>,
+                <span className="text-xs text-gray-600" key={`wa-${sub.id}`}>{sub.whatsapp_no || '—'}</span>,
+                <span className="text-xs text-gray-600" key={`email-${sub.id}`}>{sub.email || '—'}</span>,
+                <span className="text-xs font-semibold text-gray-600 bg-gray-100 px-2 py-0.5 rounded" key={`course-${sub.id}`}>{sub.course_opted}</span>,
+                <span className="font-bold text-gray-800" key={`fees-${sub.id}`}>{formatCurrency(sub.fees_paid)}</span>,
+                <span className="text-xs text-gray-700" key={`price-${sub.id}`}>{sub.program_price ? formatCurrency(sub.program_price) : '—'}</span>,
+                <span className="text-xs font-semibold text-amber-600" key={`pending-${sub.id}`}>{sub.pending_amount ? formatCurrency(sub.pending_amount) : '—'}</span>,
+                <span className="text-xs font-semibold text-primary-950 bg-primary-50 px-2 py-1 rounded" key={`coord-${sub.id}`}>
                   {sub.employee?.name || `ID: ${sub.employee_id}`}
                 </span>,
-                <span className="text-xs text-gray-500 italic block max-w-xs truncate" title={sub.remarks} key={sub.id}>
+                <span className="text-xs text-gray-500 italic block max-w-xs truncate" title={sub.remarks} key={`rem-${sub.id}`}>
                   {sub.remarks || '—'}
                 </span>
               ])}

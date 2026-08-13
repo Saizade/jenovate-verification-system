@@ -26,7 +26,7 @@ router.get('/stats', async (req, res, next) => {
       VerificationResult.count({ where: { match_status: 'MATCH' } }),
       VerificationResult.count({ where: { match_status: 'MISMATCH' } }),
       VerificationResult.count({ where: { fraud_level: 'HIGH_RISK' } }),
-      Student.sum('payment_amount')
+      Student.sum('amount_received')
     ]);
 
     return res.json({
@@ -88,7 +88,7 @@ router.get('/revenue', async (req, res, next) => {
     const results = await Student.findAll({
       attributes: [
         [fn('strftime', '%Y-%m', col('created_at')), 'month'],
-        [fn('SUM', col('payment_amount')), 'amount']
+        [fn('SUM', col('amount_received')), 'amount']
       ],
       where: {
         created_at: { [Op.gte]: twelveMonthsAgo }

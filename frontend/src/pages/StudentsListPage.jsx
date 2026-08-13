@@ -259,16 +259,21 @@ export default function StudentsListPage() {
         ) : students.length > 0 ? (
           <div className="space-y-4">
             <Table
-              headers={['Ref ID', 'Name', 'Course', 'Fees Paid', 'Joining Date', 'Verify Status', 'Action']}
+              headers={['Ref ID', 'S.no', 'Student Name', 'Counselor', 'College', 'Department', 'Course Opted', 'Received', 'Pending', 'Channel', 'Verify Status', 'Action']}
               rows={students.map((st) => [
                 <span className="font-mono text-xs font-bold text-gray-800" key={st.id}>{st.reference_id}</span>,
+                <span className="text-xs text-gray-500 font-semibold" key={st.id}>{st.s_no || '—'}</span>,
                 <div key={st.id}>
                   <div className="font-semibold text-gray-800">{st.full_name}</div>
-                  <div className="text-xs text-gray-400">{st.email}</div>
+                  <div className="text-xs text-gray-400">{st.email || st.phone_no || '—'}</div>
                 </div>,
-                <span className="text-xs font-medium text-gray-600 bg-gray-100 px-2 py-0.5 rounded" key={st.id}>{st.course_name}</span>,
-                <span className="font-bold text-gray-800" key={st.id}>{formatCurrency(st.payment_amount)}</span>,
-                <span className="text-xs text-gray-400" key={st.id}>{st.joining_date}</span>,
+                <span className="text-xs font-medium text-gray-700" key={st.id}>{st.counselor_name || '—'}</span>,
+                <span className="text-xs font-medium text-gray-600 truncate max-w-[120px] block" title={st.college_name} key={st.id}>{st.college_name || '—'}</span>,
+                <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" key={st.id}>{st.department || '—'}</span>,
+                <span className="text-xs font-semibold text-primary-950 bg-primary-50 px-2 py-0.5 rounded" key={st.id}>{st.course_opted || st.course_name || '—'}</span>,
+                <span className="font-bold text-emerald-600" key={st.id}>{formatCurrency(st.amount_received || st.payment_amount)}</span>,
+                <span className="font-semibold text-amber-600" key={st.id}>{formatCurrency(st.pending_amount)}</span>,
+                <span className="text-xs text-gray-500 font-medium" key={st.id}>{st.revenue_channel || '—'}</span>,
                 <div key={st.id}>{getStatusBadge(st.reference_id)}</div>,
                 <Button
                   key={st.id}
@@ -279,7 +284,7 @@ export default function StudentsListPage() {
                     setShowDetailsModal(true);
                   }}
                 >
-                  <HiEye className="w-4 h-4" /> View Details
+                  <HiEye className="w-4 h-4" /> Details
                 </Button>
               ])}
             />
@@ -325,7 +330,7 @@ export default function StudentsListPage() {
         <Modal
           isOpen={showDetailsModal}
           onClose={() => setShowDetailsModal(false)}
-          title={`Student Profile: ${selectedStudent.reference_id}`}
+          title={`Student Details: ${selectedStudent.reference_id}`}
           size="lg"
         >
           <div className="space-y-6">
@@ -336,149 +341,133 @@ export default function StudentsListPage() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-gray-900">{selectedStudent.full_name}</h3>
-                  <span className="text-xs text-gray-400 font-medium">Joined {selectedStudent.joining_date}</span>
+                  <span className="text-xs text-gray-400 font-medium">S.no: {selectedStudent.s_no || '—'} | Date: {selectedStudent.date || selectedStudent.joining_date || '—'}</span>
                 </div>
               </div>
               <div>{getStatusBadge(selectedStudent.reference_id)}</div>
             </div>
 
-            {/* Profile Grid */}
+            {/* Profile Grid (All 24 fields) */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Personal Info */}
+              {/* General & Contact Info */}
               <div className="space-y-3 bg-gray-50/50 rounded-xl p-4 border border-gray-200/50">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-200/50 flex items-center gap-1.5">
-                  <HiEye className="w-4 h-4 text-primary-500" /> Personal Details
+                  <HiEye className="w-4 h-4 text-primary-500" /> General & Contact Details
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-gray-400">Date of Birth</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.dob}</p>
+                    <span className="text-gray-400">Counselor Name</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.counselor_name || '—'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Gender</span>
-                    <p className="font-semibold text-gray-800 capitalize">{selectedStudent.gender}</p>
+                    <span className="text-gray-400">Phone No.</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.phone_no || selectedStudent.mobile || '—'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Mobile Number</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.mobile}</p>
+                    <span className="text-gray-400">WhatsApp Number</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.whatsapp_number || '—'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Email Address</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.email}</p>
+                    <span className="text-gray-400">E-mail</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.email || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Status Remarks</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.remarks || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Academic Remarks</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.academic_remarks || '—'}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Family Details */}
+              {/* Institution & Academic Info */}
               <div className="space-y-3 bg-gray-50/50 rounded-xl p-4 border border-gray-200/50">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-200/50 flex items-center gap-1.5">
-                  <HiSparkles className="w-4 h-4 text-violet-500" /> Family Details
+                  <HiSparkles className="w-4 h-4 text-violet-500" /> Institution & Academic
                 </h4>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-gray-400">Father's Name</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.father_name}</p>
+                  <div className="col-span-2">
+                    <span className="text-gray-400">College Name</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.college_name || '—'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Mother's Name</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.mother_name}</p>
+                    <span className="text-gray-400">State</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.state || '—'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Siblings</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.number_of_siblings}</p>
+                    <span className="text-gray-400">Department</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.department || '—'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Guardian Info</span>
-                    <p className="font-semibold text-gray-800">
-                      {selectedStudent.guardian_details || '—'}
-                    </p>
+                    <span className="text-gray-400">Course Opted</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.course_opted || selectedStudent.course_name || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Type of Pack</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.type_of_pack || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Primary Course</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.primary_course || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Secondary Course</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.secondary_course || '—'}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-gray-400">Tertiary Course</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.tertiary_course || '—'}</p>
                   </div>
                 </div>
               </div>
 
-              {/* Academic Details */}
-              <div className="space-y-3 bg-gray-50/50 rounded-xl p-4 border border-gray-200/50">
+              {/* Course Status & Payment */}
+              <div className="space-y-3 bg-gray-50/50 rounded-xl p-4 border border-gray-200/50 md:col-span-2">
                 <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-200/50 flex items-center gap-1.5">
-                  <HiCalendarDays className="w-4 h-4 text-amber-500" /> Academic & Location
+                  💳 Course Status, Financials & Revenue Channel
                 </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
                   <div>
-                    <span className="text-gray-400">Course Name</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.course_name}</p>
+                    <span className="text-gray-400">Month Opted</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.month_opted || '—'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-400">Course Fees</span>
-                    <p className="font-semibold text-gray-800">{formatCurrency(selectedStudent.course_fee)}</p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400">City / State</span>
-                    <p className="font-semibold text-gray-800">
-                      {selectedStudent.city}, {selectedStudent.state}
-                    </p>
-                  </div>
-                  <div>
-                    <span className="text-gray-400 font-semibold block">Full Address</span>
-                    <p className="text-gray-600 font-medium whitespace-pre-wrap">{selectedStudent.full_address}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Details */}
-              <div className="space-y-3 bg-gray-50/50 rounded-xl p-4 border border-gray-200/50">
-                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider pb-2 border-b border-gray-200/50 flex items-center gap-1.5">
-                  🔑 Payment Details
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-gray-400">Paid Amount</span>
-                    <p className="font-semibold text-gray-800">{formatCurrency(selectedStudent.payment_amount)}</p>
+                    <span className="text-gray-400">Type of Course</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.type_of_course || '—'}</p>
                   </div>
                   <div>
                     <span className="text-gray-400">Payment Mode</span>
-                    <p className="font-semibold text-gray-800 capitalize">{selectedStudent.payment_mode}</p>
+                    <p className="font-semibold text-gray-800">{selectedStudent.payment_mode || '—'}</p>
                   </div>
-                  <div className="col-span-2">
-                    <span className="text-gray-400">Transaction ID</span>
-                    <p className="font-mono font-bold text-primary-950 bg-white px-2 py-1 rounded border border-gray-200 mt-0.5 select-all">
-                      {selectedStudent.transaction_id || '—'}
-                    </p>
+                  <div>
+                    <span className="text-gray-400">Revenue Channel</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.revenue_channel || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Program Price</span>
+                    <p className="font-bold text-gray-900">{formatCurrency(selectedStudent.program_price)}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Amount Received</span>
+                    <p className="font-bold text-emerald-600">{formatCurrency(selectedStudent.amount_received || selectedStudent.payment_amount)}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Pending Amount</span>
+                    <p className="font-bold text-amber-600">{formatCurrency(selectedStudent.pending_amount)}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Submitted By</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.submittedBy?.name || 'System / Student'}</p>
                   </div>
                 </div>
-              </div>
-            </div>
-
-            {/* Documents preview list */}
-            <div className="border-t border-gray-200 pt-4">
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
-                Attached Documents
-              </h4>
-              <div className="flex flex-wrap gap-3">
-                {selectedStudent.documents ? (
-                  Object.entries(
-                    typeof selectedStudent.documents === 'string'
-                      ? JSON.parse(selectedStudent.documents)
-                      : selectedStudent.documents
-                  ).map(([key, value]) => (
-                    <a
-                      href={`http://localhost:5000/${value}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 p-2 border border-gray-200 hover:border-primary-400 bg-gray-50 hover:bg-primary-50 rounded-lg text-xs font-semibold text-gray-700 transition"
-                      key={key}
-                    >
-                      <span>📎</span>
-                      <span className="capitalize">{key.replace('Doc', '').replace('Doc', '')} Document</span>
-                    </a>
-                  ))
-                ) : (
-                  <span className="text-xs text-gray-400 italic">No attachments found.</span>
-                )}
               </div>
             </div>
 
             <div className="flex justify-end pt-4 border-t border-gray-200">
               <Button variant="primary" onClick={() => setShowDetailsModal(false)}>
-                Close Profile
+                Close Details
               </Button>
             </div>
           </div>

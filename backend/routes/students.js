@@ -20,8 +20,7 @@ router.post(
     });
   },
   [
-    body('fullName').notEmpty().withMessage('Full name is required').trim(),
-    body('course').notEmpty().withMessage('Course name is required').trim()
+    body('fullName').notEmpty().withMessage('Full name is required').trim()
   ],
   async (req, res, next) => {
     try {
@@ -51,29 +50,39 @@ router.post(
         }
       }
 
-      // Create student record
+      const programPrice = parseFloat(req.body.programPrice) || 0;
+      const amountReceived = parseFloat(req.body.amountReceived) || 0;
+      const pendingAmount = req.body.pendingAmount !== undefined && req.body.pendingAmount !== ''
+        ? parseFloat(req.body.pendingAmount)
+        : (programPrice - amountReceived);
+
+      // Create student record with 24 fields
       const student = await Student.create({
         reference_id,
-        full_name: req.body.fullName,
-        dob: req.body.dateOfBirth || null,
-        gender: req.body.gender || null,
-        mobile: req.body.mobile || null,
+        s_no: req.body.sNo || req.body.s_no || null,
+        remarks: req.body.remarks || null,
+        date: req.body.date || new Date().toISOString().split('T')[0],
+        academic_remarks: req.body.academicRemarks || req.body.academic_remarks || null,
+        counselor_name: req.body.counselorName || req.body.counselor_name || null,
+        full_name: req.body.fullName || req.body.full_name,
+        phone_no: req.body.phoneNo || req.body.phone_no || req.body.mobile || null,
+        whatsapp_number: req.body.whatsappNumber || req.body.whatsapp_number || null,
         email: req.body.email || null,
-        father_name: req.body.fatherName || null,
-        mother_name: req.body.motherName || null,
-        number_of_siblings: parseInt(req.body.siblings) || 0,
-        guardian_details: req.body.guardianName ? `${req.body.guardianName} (${req.body.guardianPhone || ''})` : null,
+        college_name: req.body.collegeName || req.body.college_name || null,
         state: req.body.state || null,
-        city: req.body.city || null,
-        full_address: req.body.address || null,
-        qualification: req.body.qualification || null,
-        previous_education: req.body.previousInstitution || null,
-        course_name: req.body.course,
-        course_fee: parseFloat(req.body.totalFees) || null,
-        payment_amount: parseFloat(req.body.amountPaid) || null,
-        payment_mode: req.body.paymentMode || null,
-        transaction_id: req.body.transactionId || null,
-        joining_date: req.body.joiningDate || new Date().toISOString().split('T')[0],
+        department: req.body.department || null,
+        course_opted: req.body.courseOpted || req.body.course_opted || req.body.course || null,
+        primary_course: req.body.primaryCourse || req.body.primary_course || null,
+        secondary_course: req.body.secondaryCourse || req.body.secondary_course || null,
+        tertiary_course: req.body.tertiaryCourse || req.body.tertiary_course || null,
+        type_of_pack: req.body.typeOfPack || req.body.type_of_pack || null,
+        month_opted: req.body.monthOpted || req.body.month_opted || null,
+        type_of_course: req.body.typeOfCourse || req.body.type_of_course || null,
+        payment_mode: req.body.paymentMode || req.body.payment_mode || null,
+        program_price: programPrice,
+        amount_received: amountReceived,
+        pending_amount: pendingAmount,
+        revenue_channel: req.body.revenueChannel || req.body.revenue_channel || null,
         documents,
         is_locked: true,
         submitted_by: req.user ? req.user.id : null

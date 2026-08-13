@@ -41,32 +41,64 @@ const verify = async (referenceId) => {
     match: studentName === submissionName
   };
 
-  // course_name comparison (case-insensitive, trimmed)
-  const studentCourse = (student.course_name || '').trim().toLowerCase();
-  const submissionCourse = (submission.course_name || '').trim().toLowerCase();
-  fieldDetails.course_name = {
-    student_value: student.course_name || '',
-    employee_value: submission.course_name || '',
+  // whatsapp_no comparison
+  const studentWhatsApp = (student.whatsapp_number || '').trim().replace(/\D/g, '');
+  const submissionWhatsApp = (submission.whatsapp_no || '').trim().replace(/\D/g, '');
+  fieldDetails.whatsapp_no = {
+    student_value: student.whatsapp_number || '',
+    employee_value: submission.whatsapp_no || '',
+    match: studentWhatsApp === submissionWhatsApp
+  };
+
+  // email comparison (case-insensitive, trimmed)
+  const studentEmail = (student.email || '').trim().toLowerCase();
+  const submissionEmail = (submission.email || '').trim().toLowerCase();
+  fieldDetails.email = {
+    student_value: student.email || '',
+    employee_value: submission.email || '',
+    match: studentEmail === submissionEmail
+  };
+
+  // course_opted comparison (case-insensitive, trimmed)
+  const studentCourse = (student.course_opted || '').trim().toLowerCase();
+  const submissionCourse = (submission.course_opted || '').trim().toLowerCase();
+  fieldDetails.course_opted = {
+    student_value: student.course_opted || '',
+    employee_value: submission.course_opted || '',
     match: studentCourse === submissionCourse
   };
 
-  // payment_amount comparison (numeric)
-  const studentPayment = parseFloat(student.payment_amount) || 0;
-  const submissionPayment = parseFloat(submission.payment_amount) || 0;
-  fieldDetails.payment_amount = {
-    student_value: studentPayment,
-    employee_value: submissionPayment,
-    match: studentPayment === submissionPayment
+  // fees_paid / amount_received comparison (numeric)
+  const studentFees = parseFloat(student.amount_received) || 0;
+  const submissionFees = parseFloat(submission.fees_paid) || 0;
+  fieldDetails.fees_paid = {
+    student_value: studentFees,
+    employee_value: submissionFees,
+    match: studentFees === submissionFees
   };
 
-  // joining_date comparison (string date)
-  const studentDate = student.joining_date
-    ? String(student.joining_date)
-    : '';
-  const submissionDate = submission.joining_date
-    ? String(submission.joining_date)
-    : '';
-  fieldDetails.joining_date = {
+  // program_price comparison (numeric)
+  const studentProgramPrice = parseFloat(student.program_price) || 0;
+  const submissionProgramPrice = parseFloat(submission.program_price) || 0;
+  fieldDetails.program_price = {
+    student_value: studentProgramPrice,
+    employee_value: submissionProgramPrice,
+    match: studentProgramPrice === submissionProgramPrice
+  };
+
+  // pending_amount comparison (numeric)
+  const studentPending = parseFloat(student.pending_amount) || 0;
+  const submissionPending = parseFloat(submission.pending_amount) || 0;
+  fieldDetails.pending_amount = {
+    student_value: studentPending,
+    employee_value: submissionPending,
+    match: studentPending === submissionPending
+  };
+
+  // date comparison (string date)
+  const studentDate = student.date ? String(student.date) : '';
+  const submissionDate = submission.date ? String(submission.date) : '';
+  fieldDetails.date = {
     student_value: studentDate,
     employee_value: submissionDate,
     match: studentDate === submissionDate
@@ -76,8 +108,8 @@ const verify = async (referenceId) => {
   const allMatch = Object.values(fieldDetails).every((f) => f.match);
   const matchStatus = allMatch ? 'MATCH' : 'MISMATCH';
 
-  // 6. Calculate difference amount
-  const differenceAmount = Math.abs(studentPayment - submissionPayment);
+  // 6. Calculate difference amount (based on fees_paid)
+  const differenceAmount = Math.abs(studentFees - submissionFees);
 
   // 7. Calculate fraud score
   const { score: fraudScore, level: fraudLevel } = await calculateScore(

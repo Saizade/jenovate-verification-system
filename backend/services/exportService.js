@@ -22,10 +22,10 @@ const exportStudentsPDF = async (students) => {
       doc.fontSize(10).text(`Generated on: ${new Date().toLocaleDateString()}`, { align: 'center' });
       doc.moveDown(1);
 
-      // Table headers
-      const headers = ['Ref ID', 'Name', 'Course', 'Payment', 'Joining Date', 'City'];
-      const colWidths = [110, 140, 130, 80, 90, 100];
-      const startX = 30;
+      // Table headers for PDF
+      const headers = ['Ref ID', 'S.no', 'Name', 'Counselor', 'College', 'Department', 'Course Opted', 'Received', 'Pending', 'Channel'];
+      const colWidths = [70, 35, 95, 65, 110, 60, 110, 50, 50, 65];
+      const startX = 20;
       let y = doc.y;
 
       // Header background
@@ -34,8 +34,8 @@ const exportStudentsPDF = async (students) => {
       // Header text
       let x = startX;
       headers.forEach((header, i) => {
-        doc.fontSize(9).font('Helvetica-Bold').fillColor('#ffffff')
-          .text(header, x + 4, y + 5, { width: colWidths[i] - 8, align: 'left' });
+        doc.fontSize(8).font('Helvetica-Bold').fillColor('#ffffff')
+          .text(header, x + 2, y + 5, { width: colWidths[i] - 4, align: 'left' });
         x += colWidths[i];
       });
 
@@ -54,17 +54,21 @@ const exportStudentsPDF = async (students) => {
 
           const rowData = [
             student.reference_id || '',
+            student.s_no || String(index + 1),
             student.full_name || '',
-            student.course_name || '',
-            `₹${parseFloat(student.payment_amount || 0).toFixed(2)}`,
-            student.joining_date || '',
-            student.city || ''
+            student.counselor_name || '',
+            student.college_name || '',
+            student.department || '',
+            student.course_opted || student.course_name || '',
+            `₹${parseFloat(student.amount_received || student.payment_amount || 0).toFixed(0)}`,
+            `₹${parseFloat(student.pending_amount || 0).toFixed(0)}`,
+            student.revenue_channel || ''
           ];
 
           x = startX;
           rowData.forEach((data, i) => {
-            doc.fontSize(8).font('Helvetica').fillColor('#1e293b')
-              .text(String(data), x + 4, y + 4, { width: colWidths[i] - 8, align: 'left' });
+            doc.fontSize(7).font('Helvetica').fillColor('#1e293b')
+              .text(String(data), x + 2, y + 4, { width: colWidths[i] - 4, align: 'left' });
             x += colWidths[i];
           });
 
@@ -97,19 +101,33 @@ const exportStudentsExcel = async (students) => {
 
   const sheet = workbook.addWorksheet('Students');
 
-  // Define columns
+  // Define columns matching 24 fields
   sheet.columns = [
     { header: 'Reference ID', key: 'reference_id', width: 18 },
-    { header: 'Full Name', key: 'full_name', width: 25 },
-    { header: 'Email', key: 'email', width: 25 },
-    { header: 'Mobile', key: 'mobile', width: 15 },
-    { header: 'Course', key: 'course_name', width: 20 },
-    { header: 'Course Fee', key: 'course_fee', width: 12 },
-    { header: 'Payment Amount', key: 'payment_amount', width: 15 },
-    { header: 'Payment Mode', key: 'payment_mode', width: 15 },
-    { header: 'Joining Date', key: 'joining_date', width: 15 },
-    { header: 'City', key: 'city', width: 15 },
-    { header: 'State', key: 'state', width: 15 }
+    { header: 'S.no', key: 's_no', width: 10 },
+    { header: 'Remarks', key: 'remarks', width: 18 },
+    { header: 'Date', key: 'date', width: 14 },
+    { header: 'Academic Remarks', key: 'academic_remarks', width: 22 },
+    { header: 'Counselor Name', key: 'counselor_name', width: 20 },
+    { header: 'Student Name', key: 'full_name', width: 25 },
+    { header: 'Phone No.', key: 'phone_no', width: 16 },
+    { header: 'WhatsApp Number', key: 'whatsapp_number', width: 18 },
+    { header: 'E-mail', key: 'email', width: 28 },
+    { header: 'College Name', key: 'college_name', width: 30 },
+    { header: 'State', key: 'state', width: 16 },
+    { header: 'Department', key: 'department', width: 18 },
+    { header: 'Course Opted', key: 'course_opted', width: 25 },
+    { header: 'Primary Course', key: 'primary_course', width: 22 },
+    { header: 'Secondary Course', key: 'secondary_course', width: 20 },
+    { header: 'Tertiary Course', key: 'tertiary_course', width: 20 },
+    { header: 'Type of Pack', key: 'type_of_pack', width: 16 },
+    { header: 'Month Opted', key: 'month_opted', width: 14 },
+    { header: 'Type of Course', key: 'type_of_course', width: 25 },
+    { header: 'Payment Mode', key: 'payment_mode', width: 16 },
+    { header: 'Program Price', key: 'program_price', width: 15 },
+    { header: 'Amount Received', key: 'amount_received', width: 16 },
+    { header: 'Pending Amount', key: 'pending_amount', width: 16 },
+    { header: 'Revenue Channel', key: 'revenue_channel', width: 20 }
   ];
 
   // Style header row
@@ -136,19 +154,33 @@ const exportStudentsExcel = async (students) => {
 
   // Add data rows
   if (students && students.length > 0) {
-    students.forEach((student) => {
+    students.forEach((student, idx) => {
       sheet.addRow({
         reference_id: student.reference_id || '',
+        s_no: student.s_no || idx + 1,
+        remarks: student.remarks || '',
+        date: student.date || '',
+        academic_remarks: student.academic_remarks || '',
+        counselor_name: student.counselor_name || '',
         full_name: student.full_name || '',
+        phone_no: student.phone_no || student.mobile || '',
+        whatsapp_number: student.whatsapp_number || '',
         email: student.email || '',
-        mobile: student.mobile || '',
-        course_name: student.course_name || '',
-        course_fee: parseFloat(student.course_fee || 0),
-        payment_amount: parseFloat(student.payment_amount || 0),
+        college_name: student.college_name || '',
+        state: student.state || '',
+        department: student.department || '',
+        course_opted: student.course_opted || student.course_name || '',
+        primary_course: student.primary_course || '',
+        secondary_course: student.secondary_course || '',
+        tertiary_course: student.tertiary_course || '',
+        type_of_pack: student.type_of_pack || '',
+        month_opted: student.month_opted || '',
+        type_of_course: student.type_of_course || '',
         payment_mode: student.payment_mode || '',
-        joining_date: student.joining_date || '',
-        city: student.city || '',
-        state: student.state || ''
+        program_price: parseFloat(student.program_price || 0),
+        amount_received: parseFloat(student.amount_received || student.payment_amount || 0),
+        pending_amount: parseFloat(student.pending_amount || 0),
+        revenue_channel: student.revenue_channel || ''
       });
     });
   }

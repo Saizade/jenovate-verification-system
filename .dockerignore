@@ -1,8 +1,0 @@
-backend/node_modules/
-backend/uploads/
-backend/*.sqlite
-frontend/node_modules/
-frontend/dist/
-.git/
-.DS_Store
-*.log

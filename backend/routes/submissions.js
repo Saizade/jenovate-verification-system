@@ -17,12 +17,12 @@ router.post(
   [
     body('reference_id').notEmpty().withMessage('Reference ID is required').trim(),
     body('student_name').notEmpty().withMessage('Student name is required').trim(),
-    body('course_name').notEmpty().withMessage('Course name is required').trim(),
-    body('payment_amount')
+    body('course_opted').notEmpty().withMessage('Course opted is required').trim(),
+    body('fees_paid')
       .notEmpty()
-      .withMessage('Payment amount is required')
+      .withMessage('Fees paid is required')
       .isNumeric()
-      .withMessage('Payment amount must be a number')
+      .withMessage('Fees paid must be a number')
   ],
   async (req, res, next) => {
     try {
@@ -35,16 +35,23 @@ router.post(
         });
       }
 
-      const { reference_id, student_name, course_name, payment_amount, joining_date, remarks } = req.body;
+      const {
+        reference_id, date, student_name, whatsapp_no, email,
+        course_opted, fees_paid, program_price, pending_amount, remarks
+      } = req.body;
 
       // Create submission
       const submission = await EmployeeSubmission.create({
         reference_id,
         employee_id: req.user.id,
+        date: date || null,
         student_name,
-        course_name,
-        payment_amount,
-        joining_date: joining_date || null,
+        whatsapp_no: whatsapp_no || null,
+        email: email || null,
+        course_opted,
+        fees_paid: parseFloat(fees_paid),
+        program_price: program_price ? parseFloat(program_price) : null,
+        pending_amount: pending_amount ? parseFloat(pending_amount) : null,
         remarks: remarks || null,
         is_locked: true
       });

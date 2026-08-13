@@ -8,6 +8,7 @@ require('dotenv').config();
 
 const { sequelize } = require('./models');
 const seedAdmin = require('./seeders/adminSeed');
+const seedStudents = require('./seeders/studentSeed');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
@@ -85,8 +86,9 @@ async function startServer() {
     await sequelize.sync();
     console.log('Database synchronized successfully.');
 
-    // Seed default admin
+    // Seed default admin and sample students
     await seedAdmin();
+    await seedStudents();
 
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`);
