@@ -11,7 +11,7 @@ import Skeleton from '../components/ui/Skeleton';
 
 import {
   HiMagnifyingGlass, HiFunnel, HiArrowDownTray,
-  HiEye, HiSparkles, HiCalendarDays
+  HiEye, HiSparkles, HiMapPin, HiBanknotes, HiExclamationCircle, HiCheckCircle
 } from 'react-icons/hi2';
 
 const COURSE_OPTIONS = [
@@ -23,15 +23,42 @@ const COURSE_OPTIONS = [
   { value: 'ui_ux_design', label: 'UI/UX Design' }
 ];
 
+const POPULAR_STATES = [
+  'Maharashtra',
+  'Karnataka',
+  'Delhi',
+  'Tamil Nadu',
+  'Telangana',
+  'Uttar Pradesh',
+  'Gujarat',
+  'West Bengal',
+  'Rajasthan',
+  'Kerala',
+  'Madhya Pradesh',
+  'Punjab'
+];
+
+import { useSearchParams } from 'react-router-dom';
+
 export default function StudentsListPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [students, setStudents] = useState([]);
   const [verMap, setVerMap] = useState(new Map());
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [course, setCourse] = useState('');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
   
+  // Filters (Initialized from URL parameters if present)
+  const [search, setSearch] = useState(searchParams.get('search') || '');
+  const [course, setCourse] = useState(searchParams.get('course') || '');
+  const [stateFilter, setStateFilter] = useState(searchParams.get('state') || '');
+  const [paymentStatus, setPaymentStatus] = useState(searchParams.get('paymentStatus') || ''); // 'pending', 'paid', ''
+  const [counselor, setCounselor] = useState(searchParams.get('counselor') || '');
+  const [department, setDepartment] = useState(searchParams.get('department') || '');
+  const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
+  const [dateTo, setDateTo] = useState(searchParams.get('dateTo') || '');
+  
+  // Summary calculations for filtered items
+  const [filteredSummary, setFilteredSummary] = useState({ totalCount: 0, totalPending: 0, totalReceived: 0 });
+
   // Modal state for student details
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -48,14 +75,28 @@ export default function StudentsListPage() {
         limit: 10,
         search,
         course,
+        state: stateFilter,
+        paymentStatus,
+        counselor,
+        department,
         dateFrom,
         dateTo
       }).toString();
 
       const res = await api.get(`/students?${queryParams}`);
       if (res.data.success) {
-        setStudents(res.data.data.students);
+        const fetched = res.data.data.students || [];
+        setStudents(fetched);
         setTotalPages(res.data.data.totalPages || 1);
+        
+        // Calculate filtered summary stats
+        const pendingSum = fetched.reduce((acc, curr) => acc + (parseFloat(curr.pending_amount) || 0), 0);
+        const receivedSum = fetched.reduce((acc, curr) => acc + (parseFloat(curr.amount_received || curr.payment_amount) || 0), 0);
+        setFilteredSummary({
+          totalCount: res.data.data.total || fetched.length,
+          totalPending: pendingSum,
+          totalReceived: receivedSum
+        });
       }
 
       // Also get verification results to overlay status
@@ -74,7 +115,7 @@ export default function StudentsListPage() {
 
   useEffect(() => {
     fetchStudents();
-  }, [page, course, dateFrom, dateTo]);
+  }, [page, course, stateFilter, paymentStatus, counselor, department, dateFrom, dateTo]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -85,8 +126,13 @@ export default function StudentsListPage() {
   const handleClearFilters = () => {
     setSearch('');
     setCourse('');
+    setStateFilter('');
+    setPaymentStatus('');
+    setCounselor('');
+    setDepartment('');
     setDateFrom('');
     setDateTo('');
+    setSearchParams({});
     setPage(1);
   };
 
@@ -96,6 +142,8 @@ export default function StudentsListPage() {
       const queryParams = new URLSearchParams({
         search,
         course,
+        state: stateFilter,
+        paymentStatus,
         dateFrom,
         dateTo
       }).toString();
@@ -125,7 +173,7 @@ export default function StudentsListPage() {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0
-    }).format(val);
+    }).format(val || 0);
   };
 
   const getStatusBadge = (refId) => {
@@ -140,10 +188,10 @@ export default function StudentsListPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-primary-950 tracking-tight">
-            Registered Students
+            Registered Students Directory
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Browse, search, and audit student registration submissions.
+            Deep filter students by state (e.g. Maharashtra), pending fee status, course, and date.
           </p>
         </div>
 
@@ -166,87 +214,187 @@ export default function StudentsListPage() {
         </div>
       </div>
 
-      {/* Filters Card */}
-      <Card className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
-        <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-          {/* Global Search */}
-          <div className="md:col-span-2">
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">
-              Search Student
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by Name, Reference ID, Email..."
-                className="form-input pl-10"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <HiMagnifyingGlass className="absolute left-3.5 top-3.5 w-4.5 h-4.5 text-gray-400" />
+      {/* Advanced Filters Card */}
+      <Card className="p-5 bg-white border border-gray-100 rounded-2xl shadow-md">
+        <form onSubmit={handleSearchSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            {/* Global Search */}
+            <div className="md:col-span-2">
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                Search Student
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Name, Ref ID, Email, Phone, College..."
+                  className="form-input pl-10 text-xs"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+                <HiMagnifyingGlass className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Filter by State */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                State / Region
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  list="states-list"
+                  placeholder="e.g. Maharashtra"
+                  className="form-input text-xs pl-8"
+                  value={stateFilter}
+                  onChange={(e) => setStateFilter(e.target.value)}
+                />
+                <HiMapPin className="absolute left-2.5 top-3 w-4 h-4 text-rose-500" />
+                <datalist id="states-list">
+                  {POPULAR_STATES.map((s) => (
+                    <option key={s} value={s} />
+                  ))}
+                </datalist>
+              </div>
+            </div>
+
+            {/* Filter by Payment / Fee Status */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                Fee Payment Status
+              </label>
+              <select
+                className="form-input text-xs"
+                value={paymentStatus}
+                onChange={(e) => setPaymentStatus(e.target.value)}
+              >
+                <option value="">All Payment Statuses</option>
+                <option value="pending">⚠️ Pending Dues (Fees Not Fully Paid)</option>
+                <option value="paid">✅ Fully Paid (No Dues)</option>
+              </select>
+            </div>
+
+            {/* Course */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                Course Opted
+              </label>
+              <select
+                className="form-input text-xs"
+                value={course}
+                onChange={(e) => setCourse(e.target.value)}
+              >
+                <option value="">All Courses</option>
+                {COURSE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.label}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date Range */}
+            <div>
+              <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
+                Date Filter
+              </label>
+              <div className="grid grid-cols-2 gap-1">
+                <input
+                  type="date"
+                  className="form-input text-[11px] p-1.5"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  title="From Date"
+                />
+                <input
+                  type="date"
+                  className="form-input text-[11px] p-1.5"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  title="To Date"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Course */}
-          <div>
-            <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">
-              Course
-            </label>
-            <select
-              className="form-input"
-              value={course}
-              onChange={(e) => setCourse(e.target.value)}
-            >
-              <option value="">All Courses</option>
-              {COURSE_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.label}>
-                  {opt.label}
-                </option>
+          {/* Quick Filter Chips & Action Buttons */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-gray-100">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-bold text-gray-400">Quick State Filters:</span>
+              {['Maharashtra', 'Karnataka', 'Delhi', 'Gujarat'].map((st) => (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setStateFilter(st)}
+                  className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                    stateFilter.toLowerCase() === st.toLowerCase()
+                      ? 'bg-rose-500 text-white border-rose-500 font-bold shadow-sm'
+                      : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                  }`}
+                >
+                  📍 {st}
+                </button>
               ))}
-            </select>
-          </div>
-
-          {/* Date from/to */}
-          <div className="grid grid-cols-2 gap-2 md:col-span-1">
-            <div>
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                From Date
-              </label>
-              <input
-                type="date"
-                className="form-input text-xs px-2"
-                value={dateFrom}
-                onChange={(e) => setDateFrom(e.target.value)}
-              />
+              {stateFilter && (
+                <button
+                  type="button"
+                  onClick={() => setStateFilter('')}
+                  className="text-xs text-red-500 font-bold hover:underline ml-1"
+                >
+                  Clear State
+                </button>
+              )}
             </div>
-            <div>
-              <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                To Date
-              </label>
-              <input
-                type="date"
-                className="form-input text-xs px-2"
-                value={dateTo}
-                onChange={(e) => setDateTo(e.target.value)}
-              />
-            </div>
-          </div>
 
-          {/* Buttons */}
-          <div className="flex gap-2">
-            <Button type="submit" variant="primary" className="flex-1 py-2 text-xs">
-              Apply Filters
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="px-2 text-xs"
-              onClick={handleClearFilters}
-            >
-              Clear
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" variant="primary" className="py-1.5 px-4 text-xs">
+                Apply Filters
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="py-1.5 px-3 text-xs"
+                onClick={handleClearFilters}
+              >
+                Clear All
+              </Button>
+            </div>
           </div>
         </form>
       </Card>
+
+      {/* Filter Summary Stats Banner */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-4 bg-indigo-50/70 border border-indigo-100 rounded-2xl flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-indigo-600 uppercase">Filtered Students</span>
+            <h3 className="text-2xl font-black text-indigo-950 mt-0.5">{filteredSummary.totalCount}</h3>
+          </div>
+          <div className="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-xl flex items-center justify-center font-bold">
+            👥
+          </div>
+        </div>
+
+        <div className="p-4 bg-amber-50/70 border border-amber-100 rounded-2xl flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-amber-700 uppercase">Page Pending Dues</span>
+            <h3 className="text-2xl font-black text-amber-900 mt-0.5">{formatCurrency(filteredSummary.totalPending)}</h3>
+          </div>
+          <div className="w-10 h-10 bg-amber-100 text-amber-600 rounded-xl flex items-center justify-center font-bold">
+            <HiExclamationCircle className="w-6 h-6" />
+          </div>
+        </div>
+
+        <div className="p-4 bg-emerald-50/70 border border-emerald-100 rounded-2xl flex items-center justify-between">
+          <div>
+            <span className="text-xs font-bold text-emerald-700 uppercase">Page Fees Collected</span>
+            <h3 className="text-2xl font-black text-emerald-950 mt-0.5">{formatCurrency(filteredSummary.totalReceived)}</h3>
+          </div>
+          <div className="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center font-bold">
+            <HiBanknotes className="w-6 h-6" />
+          </div>
+        </div>
+      </div>
 
       {/* Students Table */}
       <Card className="p-4 bg-white border border-gray-100 rounded-2xl shadow-sm">
@@ -259,34 +407,51 @@ export default function StudentsListPage() {
         ) : students.length > 0 ? (
           <div className="space-y-4">
             <Table
-              headers={['Ref ID', 'S.no', 'Student Name', 'Counselor', 'College', 'Department', 'Course Opted', 'Received', 'Pending', 'Channel', 'Verify Status', 'Action']}
-              rows={students.map((st) => [
-                <span className="font-mono text-xs font-bold text-gray-800" key={st.id}>{st.reference_id}</span>,
-                <span className="text-xs text-gray-500 font-semibold" key={st.id}>{st.s_no || '—'}</span>,
-                <div key={st.id}>
-                  <div className="font-semibold text-gray-800">{st.full_name}</div>
-                  <div className="text-xs text-gray-400">{st.email || st.phone_no || '—'}</div>
-                </div>,
-                <span className="text-xs font-medium text-gray-700" key={st.id}>{st.counselor_name || '—'}</span>,
-                <span className="text-xs font-medium text-gray-600 truncate max-w-[120px] block" title={st.college_name} key={st.id}>{st.college_name || '—'}</span>,
-                <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" key={st.id}>{st.department || '—'}</span>,
-                <span className="text-xs font-semibold text-primary-950 bg-primary-50 px-2 py-0.5 rounded" key={st.id}>{st.course_opted || st.course_name || '—'}</span>,
-                <span className="font-bold text-emerald-600" key={st.id}>{formatCurrency(st.amount_received || st.payment_amount)}</span>,
-                <span className="font-semibold text-amber-600" key={st.id}>{formatCurrency(st.pending_amount)}</span>,
-                <span className="text-xs text-gray-500 font-medium" key={st.id}>{st.revenue_channel || '—'}</span>,
-                <div key={st.id}>{getStatusBadge(st.reference_id)}</div>,
-                <Button
-                  key={st.id}
-                  variant="ghost"
-                  className="flex items-center gap-1 text-primary-600 hover:text-primary-800 py-1 px-2 text-xs"
-                  onClick={() => {
-                    setSelectedStudent(st);
-                    setShowDetailsModal(true);
-                  }}
-                >
-                  <HiEye className="w-4 h-4" /> Details
-                </Button>
-              ])}
+              headers={['Ref ID', 'Student Name', 'State', 'Counselor', 'College', 'Department', 'Course Opted', 'Received', 'Pending', 'Payment Status', 'Verify Status', 'Action']}
+              rows={students.map((st) => {
+                const isPending = (parseFloat(st.pending_amount) || 0) > 0;
+                return [
+                  <span className="font-mono text-xs font-bold text-gray-800" key={`ref-${st.id}`}>{st.reference_id}</span>,
+                  <div key={`name-${st.id}`}>
+                    <div className="font-semibold text-gray-800">{st.full_name}</div>
+                    <div className="text-xs text-gray-400">{st.email || st.phone_no || '—'}</div>
+                  </div>,
+                  <span className="text-xs font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded" key={`state-${st.id}`}>
+                    {st.state || '—'}
+                  </span>,
+                  <span className="text-xs font-medium text-gray-700" key={`coun-${st.id}`}>{st.counselor_name || '—'}</span>,
+                  <span className="text-xs font-medium text-gray-600 truncate max-w-[120px] block" title={st.college_name} key={`col-${st.id}`}>{st.college_name || '—'}</span>,
+                  <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" key={`dept-${st.id}`}>{st.department || '—'}</span>,
+                  <span className="text-xs font-semibold text-primary-950 bg-primary-50 px-2 py-0.5 rounded" key={`crs-${st.id}`}>{st.course_opted || st.course_name || '—'}</span>,
+                  <span className="font-bold text-emerald-600" key={`rcv-${st.id}`}>{formatCurrency(st.amount_received || st.payment_amount)}</span>,
+                  <span className={`font-bold ${isPending ? 'text-amber-600' : 'text-gray-400'}`} key={`pnd-${st.id}`}>
+                    {formatCurrency(st.pending_amount)}
+                  </span>,
+                  <div key={`pstat-${st.id}`}>
+                    {isPending ? (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded-full">
+                        <HiExclamationCircle className="w-3.5 h-3.5" /> Pending Dues
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-full">
+                        <HiCheckCircle className="w-3.5 h-3.5" /> Fully Paid
+                      </span>
+                    )}
+                  </div>,
+                  <div key={`ver-${st.id}`}>{getStatusBadge(st.reference_id)}</div>,
+                  <Button
+                    key={`act-${st.id}`}
+                    variant="ghost"
+                    className="flex items-center gap-1 text-primary-600 hover:text-primary-800 py-1 px-2 text-xs"
+                    onClick={() => {
+                      setSelectedStudent(st);
+                      setShowDetailsModal(true);
+                    }}
+                  >
+                    <HiEye className="w-4 h-4" /> Details
+                  </Button>
+                ];
+              })}
             />
 
             {/* Pagination Controls */}
@@ -341,7 +506,7 @@ export default function StudentsListPage() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-gray-900">{selectedStudent.full_name}</h3>
-                  <span className="text-xs text-gray-400 font-medium">S.no: {selectedStudent.s_no || '—'} | Date: {selectedStudent.date || selectedStudent.joining_date || '—'}</span>
+                  <span className="text-xs text-gray-400 font-medium">State: {selectedStudent.state || '—'} | Date: {selectedStudent.date || selectedStudent.joining_date || '—'}</span>
                 </div>
               </div>
               <div>{getStatusBadge(selectedStudent.reference_id)}</div>
@@ -394,7 +559,7 @@ export default function StudentsListPage() {
                   </div>
                   <div>
                     <span className="text-gray-400">State</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.state || '—'}</p>
+                    <p className="font-semibold font-bold text-rose-600">{selectedStudent.state || '—'}</p>
                   </div>
                   <div>
                     <span className="text-gray-400">Department</span>
@@ -415,10 +580,6 @@ export default function StudentsListPage() {
                   <div>
                     <span className="text-gray-400">Secondary Course</span>
                     <p className="font-semibold text-gray-800">{selectedStudent.secondary_course || '—'}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-gray-400">Tertiary Course</span>
-                    <p className="font-semibold text-gray-800">{selectedStudent.tertiary_course || '—'}</p>
                   </div>
                 </div>
               </div>
