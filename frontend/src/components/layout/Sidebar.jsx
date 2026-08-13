@@ -4,6 +4,7 @@ import {
   HiShieldCheck,
   HiOutlineHome,
   HiOutlineUsers,
+  HiOutlineAcademicCap,
   HiOutlineClipboardDocumentList,
   HiOutlineCheckBadge,
   HiOutlineExclamationTriangle,
@@ -22,6 +23,7 @@ import toast from 'react-hot-toast';
 const adminNavItems = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: HiOutlineHome },
   { label: 'Students', path: '/admin/students', icon: HiOutlineUsers },
+  { label: 'Batches', path: '/admin/batches', icon: HiOutlineAcademicCap },
   { label: 'Employee Entries', path: '/admin/submissions', icon: HiOutlineClipboardDocumentList },
   { label: 'Verification', path: '/admin/verification', icon: HiOutlineCheckBadge },
   { label: 'Fraud Reports', path: '/admin/fraud-reports', icon: HiOutlineExclamationTriangle },

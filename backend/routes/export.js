@@ -12,9 +12,13 @@ router.use(roleCheck(['admin']));
 // GET /api/export/students/pdf - Export students to PDF
 router.get('/students/pdf', async (req, res, next) => {
   try {
-    const { search, course, state, paymentStatus, dateFrom, dateTo } = req.query;
+    const { search, course, state, paymentStatus, dateFrom, dateTo, monthOpted, month } = req.query;
 
     const whereClause = {};
+    const monthFilter = monthOpted || month;
+    if (monthFilter) {
+      whereClause.month_opted = { [Op.like]: `%${monthFilter}%` };
+    }
     if (search) {
       whereClause[Op.or] = [
         { full_name: { [Op.like]: `%${search}%` } },
@@ -69,9 +73,13 @@ router.get('/students/pdf', async (req, res, next) => {
 // GET /api/export/students/excel - Export students to Excel
 router.get('/students/excel', async (req, res, next) => {
   try {
-    const { search, course, state, paymentStatus, dateFrom, dateTo } = req.query;
+    const { search, course, state, paymentStatus, dateFrom, dateTo, monthOpted, month } = req.query;
 
     const whereClause = {};
+    const monthFilter = monthOpted || month;
+    if (monthFilter) {
+      whereClause.month_opted = { [Op.like]: `%${monthFilter}%` };
+    }
     if (search) {
       whereClause[Op.or] = [
         { full_name: { [Op.like]: `%${search}%` } },

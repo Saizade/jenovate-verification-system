@@ -14,8 +14,13 @@ router.use(roleCheck(['admin']));
 // Builds a Sequelize where clause from common query params.
 // All deep-analytics endpoints reuse this for consistency.
 function buildStudentFilter(query) {
-  const { state, paymentStatus, course, counselor, department, college, dateFrom, dateTo, search } = query;
+  const { state, paymentStatus, course, counselor, department, college, dateFrom, dateTo, search, monthOpted, month } = query;
   const where = {};
+
+  const monthFilter = monthOpted || month;
+  if (monthFilter) {
+    where.month_opted = { [Op.like]: `%${monthFilter}%` };
+  }
 
   if (search) {
     where[Op.or] = [
@@ -641,11 +646,52 @@ router.get('/top-defaulters', async (req, res, next) => {
   }
 });
 
-// ─── 17. GET /api/dashboard/filter-options ───────────────────────────
+// ─── 17. GET /api/dashboard/batch-breakdown ─────────────────────────
+// Groups students by month_opted and course_opted
+router.get('/batch-breakdown', async (req, res, next) => {
+  try {
+    const where = buildStudentFilter(req.query);
+
+    const batches = await Student.findAll({
+      attributes: [
+        [fn('COALESCE', col('month_opted'), 'Unspecified Month'), 'month_opted'],
+        [fn('COALESCE', col('course_opted'), 'Unspecified Course'), 'course_opted'],
+        [fn('COUNT', col('id')), 'totalStudents'],
+        [fn('SUM', col('amount_received')), 'totalCollected'],
+        [fn('SUM', col('pending_amount')), 'totalPending']
+      ],
+      where,
+      group: [
+        fn('COALESCE', col('month_opted'), 'Unspecified Month'),
+        fn('COALESCE', col('course_opted'), 'Unspecified Course')
+      ],
+      order: [
+        [fn('COALESCE', col('month_opted'), 'Unspecified Month'), 'ASC'],
+        [fn('COUNT', col('id')), 'DESC']
+      ],
+      raw: true
+    });
+
+    return res.json({
+      success: true,
+      data: batches.map(b => ({
+        monthOpted: b.month_opted,
+        courseOpted: b.course_opted,
+        totalStudents: parseInt(b.totalStudents, 10) || 0,
+        totalCollected: parseFloat(b.totalCollected) || 0,
+        totalPending: parseFloat(b.totalPending) || 0
+      }))
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── 18. GET /api/dashboard/filter-options ───────────────────────────
 // Returns distinct values for all filterable fields (dynamic dropdowns)
 router.get('/filter-options', async (req, res, next) => {
   try {
-    const [states, courses, counselors, departments, colleges, paymentModes] = await Promise.all([
+    const [states, courses, counselors, departments, colleges, paymentModes, months] = await Promise.all([
       Student.findAll({
         attributes: [[fn('DISTINCT', col('state')), 'value']],
         where: { state: { [Op.ne]: null, [Op.ne]: '' } },
@@ -675,6 +721,11 @@ router.get('/filter-options', async (req, res, next) => {
         attributes: [[fn('DISTINCT', col('payment_mode')), 'value']],
         where: { payment_mode: { [Op.ne]: null, [Op.ne]: '' } },
         raw: true
+      }),
+      Student.findAll({
+        attributes: [[fn('DISTINCT', col('month_opted')), 'value']],
+        where: { month_opted: { [Op.ne]: null, [Op.ne]: '' } },
+        raw: true
       })
     ]);
 
@@ -686,7 +737,8 @@ router.get('/filter-options', async (req, res, next) => {
         counselors: counselors.map(r => r.value).filter(Boolean).sort(),
         departments: departments.map(r => r.value).filter(Boolean).sort(),
         colleges: colleges.map(r => r.value).filter(Boolean).sort(),
-        paymentModes: paymentModes.map(r => r.value).filter(Boolean).sort()
+        paymentModes: paymentModes.map(r => r.value).filter(Boolean).sort(),
+        months: months.map(r => r.value).filter(Boolean).sort()
       }
     });
   } catch (error) {
