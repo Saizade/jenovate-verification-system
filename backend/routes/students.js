@@ -196,10 +196,15 @@ router.get(
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
-      const { search, course, state, paymentStatus, counselor, department, dateFrom, dateTo } = req.query;
+      const { search, course, state, paymentStatus, counselor, department, dateFrom, dateTo, monthOpted, month } = req.query;
 
       // Build where clause
       const where = {};
+
+      const monthFilter = monthOpted || month;
+      if (monthFilter) {
+        where.month_opted = { [Op.like]: `%${monthFilter}%` };
+      }
 
       if (search) {
         where[Op.or] = [
@@ -213,8 +218,8 @@ router.get(
 
       if (course) {
         where[Op.or] = [
-          { course_name: { [Op.like]: `%${course}%` } },
-          { course_opted: { [Op.like]: `%${course}%` } }
+          { course_opted: { [Op.like]: `%${course}%` } },
+          { primary_course: { [Op.like]: `%${course}%` } }
         ];
       }
 
