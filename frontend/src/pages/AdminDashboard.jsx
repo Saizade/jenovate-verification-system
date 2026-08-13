@@ -12,359 +12,687 @@ import Button from '../components/ui/Button';
 
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  BarChart, Bar, Legend, PieChart, Pie, Cell
+  BarChart, Bar, PieChart, Pie, Cell, Legend
 } from 'recharts';
 
 import {
   HiUsers, HiDocumentText, HiCheckCircle, HiExclamationTriangle,
-  HiCurrencyRupee, HiChevronRight, HiBell, HiArrowTrendingUp
+  HiCurrencyRupee, HiChevronRight, HiBell, HiMapPin, HiBanknotes,
+  HiExclamationCircle, HiFunnel, HiAcademicCap, HiUserGroup, HiBuildingOffice,
+  HiCreditCard, HiArrowTrendingUp, HiMagnifyingGlass
 } from 'react-icons/hi2';
 
-const CHART_COLORS = ['#4f46e5', '#f59e0b', '#dc2626', '#10b981', '#a855f7'];
-const PIE_COLORS = ['#10b981', '#dc2626', '#f59e0b'];
+const STATE_COLORS = ['#e11d48', '#2563eb', '#059669', '#d97706', '#9333ea', '#0891b2', '#f59e0b', '#ec4899'];
+const PAYMENT_STATUS_COLORS = ['#10b981', '#f59e0b'];
+const DEPT_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+const PAYMENT_MODE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState(null);
-  const [enrollmentData, setEnrollmentData] = useState([]);
-  const [revenueData, setRevenueData] = useState([]);
-  const [matchData, setMatchData] = useState([]);
-  const [fraudData, setFraudData] = useState([]);
-  const [recentStudents, setRecentStudents] = useState([]);
-  const [recentAlerts, setRecentAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Filter options state (loaded dynamically from backend)
+  const [filterOptions, setFilterOptions] = useState({
+    states: [],
+    courses: [],
+    counselors: [],
+    departments: [],
+    colleges: [],
+    paymentModes: []
+  });
+
+  // Filter criteria state
+  const [filters, setFilters] = useState({
+    state: '',
+    paymentStatus: '', // '', 'pending', 'paid'
+    course: '',
+    counselor: '',
+    department: '',
+    college: '',
+    dateFrom: '',
+    dateTo: '',
+    search: ''
+  });
+
+  // Analytics Data States
+  const [deepStats, setDeepStats] = useState(null);
+  const [stateBreakdown, setStateBreakdown] = useState([]);
+  const [courseBreakdown, setCourseBreakdown] = useState([]);
+  const [counselorPerformance, setCounselorPerformance] = useState([]);
+  const [collegeBreakdown, setCollegeBreakdown] = useState([]);
+  const [deptBreakdown, setDeptBreakdown] = useState([]);
+  const [paymentModeBreakdown, setPaymentModeBreakdown] = useState([]);
+  const [monthlyCollection, setMonthlyCollection] = useState([]);
+  const [topDefaulters, setTopDefaulters] = useState([]);
+  const [recentAlerts, setRecentAlerts] = useState([]);
+
+  // Fetch initial filter dropdown options once
   useEffect(() => {
-    async function fetchDashboardData() {
+    async function fetchFilterOptions() {
       try {
-        setLoading(true);
-        // Fetch stats
-        const statsRes = await api.get('/dashboard/stats');
-        setStats(statsRes.data.data);
-
-        // Fetch enrollment trend
-        const enrollmentRes = await api.get('/dashboard/enrollment-trend');
-        setEnrollmentData(enrollmentRes.data.data);
-
-        // Fetch revenue
-        const revenueRes = await api.get('/dashboard/revenue');
-        setRevenueData(revenueRes.data.data);
-
-        // Fetch match distribution
-        const matchRes = await api.get('/dashboard/match-distribution');
-        const mDist = matchRes.data.data;
-        setMatchData([
-          { name: 'Matches', value: mDist.matches || 0 },
-          { name: 'Mismatches', value: mDist.mismatches || 0 },
-          { name: 'Pending', value: mDist.pending || 0 }
-        ]);
-
-        // Fetch fraud analytics
-        const fraudRes = await api.get('/dashboard/fraud-analytics');
-        const fDist = fraudRes.data.data.distribution;
-        setFraudData([
-          { name: 'Safe', value: fDist?.SAFE || 0 },
-          { name: 'Review Required', value: fDist?.REVIEW_REQUIRED || 0 },
-          { name: 'High Risk', value: fDist?.HIGH_RISK || 0 }
-        ]);
-
-        // Fetch recent students
-        const studentsRes = await api.get('/students?limit=5');
-        setRecentStudents(studentsRes.data.data.students || []);
-
-        // Fetch recent alerts
-        const alertsRes = await api.get('/verification?limit=5&fraudLevel=HIGH_RISK');
-        setRecentAlerts(alertsRes.data.data.results || []);
-
+        const res = await api.get('/dashboard/filter-options');
+        if (res.data?.success) {
+          setFilterOptions(res.data.data);
+        }
       } catch (err) {
-        console.error(err);
-        toast.error('Failed to load dashboard data.');
-      } finally {
-        setLoading(false);
+        console.error('Failed to load filter options:', err);
       }
     }
-
-    fetchDashboardData();
+    fetchFilterOptions();
   }, []);
+
+  // Main data fetcher triggered whenever filters change
+  const fetchDashboardAnalytics = async () => {
+    try {
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+
+      Object.entries(filters).forEach(([key, val]) => {
+        if (val) queryParams.append(key, val);
+      });
+
+      const queryString = queryParams.toString() ? `?${queryParams.toString()}` : '';
+
+      const [
+        statsRes,
+        stateRes,
+        courseRes,
+        counselorRes,
+        collegeRes,
+        deptRes,
+        modeRes,
+        monthlyRes,
+        defaultersRes,
+        alertsRes
+      ] = await Promise.all([
+        api.get(`/dashboard/deep-stats${queryString}`),
+        api.get(`/dashboard/state-breakdown${queryString}`),
+        api.get(`/dashboard/course-breakdown${queryString}`),
+        api.get(`/dashboard/counselor-performance${queryString}`),
+        api.get(`/dashboard/college-breakdown${queryString}`),
+        api.get(`/dashboard/department-breakdown${queryString}`),
+        api.get(`/dashboard/payment-mode-breakdown${queryString}`),
+        api.get(`/dashboard/monthly-collection${queryString}`),
+        api.get(`/dashboard/top-defaulters${queryString}`),
+        api.get('/verification?limit=5&fraud_level=HIGH_RISK')
+      ]);
+
+      setDeepStats(statsRes.data?.data || null);
+      setStateBreakdown(stateRes.data?.data || []);
+      setCourseBreakdown(courseRes.data?.data || []);
+      setCounselorPerformance(counselorRes.data?.data || []);
+      setCollegeBreakdown(collegeRes.data?.data || []);
+      setDeptBreakdown(deptRes.data?.data || []);
+      setPaymentModeBreakdown(modeRes.data?.data || []);
+      setMonthlyCollection(monthlyRes.data?.data || []);
+      setTopDefaulters(defaultersRes.data?.data || []);
+      setRecentAlerts(alertsRes.data?.data?.results || []);
+
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to load dashboard analytics.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardAnalytics();
+  }, [filters]);
+
+  const handleFilterChange = (field, value) => {
+    setFilters(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      state: '',
+      paymentStatus: '',
+      course: '',
+      counselor: '',
+      department: '',
+      college: '',
+      dateFrom: '',
+      dateTo: '',
+      search: ''
+    });
+  };
 
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       maximumFractionDigits: 0
-    }).format(val);
+    }).format(val || 0);
   };
 
-  if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <Skeleton variant="text" className="w-48 h-8" />
-          <Skeleton variant="text" className="w-32 h-8" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5">
-          {[...Array(6)].map((_, i) => (
-            <Skeleton key={i} variant="card" className="h-32" />
-          ))}
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Skeleton variant="card" className="h-80" />
-          <Skeleton variant="card" className="h-80" />
-        </div>
-      </div>
-    );
-  }
+  const navigateToStudents = (additionalParams = {}) => {
+    const params = new URLSearchParams();
+    if (filters.state) params.append('state', filters.state);
+    if (filters.paymentStatus) params.append('paymentStatus', filters.paymentStatus);
+    if (filters.course) params.append('course', filters.course);
+    if (filters.counselor) params.append('counselor', filters.counselor);
+    if (filters.department) params.append('department', filters.department);
+
+    Object.entries(additionalParams).forEach(([k, v]) => {
+      if (v) params.append(k, v);
+    });
+
+    navigate(`/admin/students?${params.toString()}`);
+  };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Welcome & Banner */}
+    <div className="space-y-8 animate-fade-in pb-12">
+      {/* Header & Page Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold text-primary-950 tracking-tight">
-            Dashboard
+          <h1 className="text-3xl font-extrabold text-primary-950 tracking-tight flex items-center gap-2">
+            Admin Intelligence & Analytics Dashboard
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Real-time insights on registrations, employee submissions, and fraud risks.
+            Deep filter analytics, state breakdowns, counselor metrics, and financial audit reports.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Link to="/admin/verification">
-            <Button variant="outline" className="flex items-center gap-1">
-              Verify Submissions <HiChevronRight className="w-4 h-4" />
-            </Button>
-          </Link>
+          <Button
+            variant="outline"
+            className="flex items-center gap-1 text-xs border-amber-300 text-amber-800 hover:bg-amber-50"
+            onClick={() => navigateToStudents({ paymentStatus: 'pending' })}
+          >
+            <HiExclamationCircle className="w-4 h-4 text-amber-600" /> Audit Defaulters
+          </Button>
+          <Button
+            variant="primary"
+            className="flex items-center gap-1 text-xs"
+            onClick={() => navigateToStudents()}
+          >
+            Full Student Directory <HiChevronRight className="w-4 h-4" />
+          </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-5">
+      {/* Global Interactive Filter Panel */}
+      <Card className="p-5 bg-white border border-gray-100 rounded-2xl shadow-sm">
+        <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <HiFunnel className="w-5 h-5 text-primary-600" />
+            <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wide">
+              Global Analytics Filters
+            </h3>
+            {Object.values(filters).some(Boolean) && (
+              <span className="text-[11px] font-bold text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full border border-primary-100">
+                Active Filters
+              </span>
+            )}
+          </div>
+          {Object.values(filters).some(Boolean) && (
+            <button
+              onClick={handleClearFilters}
+              className="text-xs text-red-600 hover:text-red-800 font-bold hover:underline"
+            >
+              Clear All Filters
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {/* Search */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Search</label>
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Name, Ref ID, Email, Phone..."
+                className="form-input pl-9 text-xs py-2"
+                value={filters.search}
+                onChange={(e) => handleFilterChange('search', e.target.value)}
+              />
+              <HiMagnifyingGlass className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
+            </div>
+          </div>
+
+          {/* State Filter */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">State / Region</label>
+            <select
+              className="form-input text-xs py-2"
+              value={filters.state}
+              onChange={(e) => handleFilterChange('state', e.target.value)}
+            >
+              <option value="">All States</option>
+              {filterOptions.states.map((st) => (
+                <option key={st} value={st}>{st}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Fee Payment Status */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Payment Status</label>
+            <select
+              className="form-input text-xs py-2"
+              value={filters.paymentStatus}
+              onChange={(e) => handleFilterChange('paymentStatus', e.target.value)}
+            >
+              <option value="">All Payment Statuses</option>
+              <option value="pending">⚠️ Pending Dues (Unpaid)</option>
+              <option value="paid">✅ Fully Paid (Zero Dues)</option>
+            </select>
+          </div>
+
+          {/* Course Filter */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Course Opted</label>
+            <select
+              className="form-input text-xs py-2"
+              value={filters.course}
+              onChange={(e) => handleFilterChange('course', e.target.value)}
+            >
+              <option value="">All Courses</option>
+              {filterOptions.courses.map((crs) => (
+                <option key={crs} value={crs}>{crs}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Counselor */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Counselor</label>
+            <select
+              className="form-input text-xs py-2"
+              value={filters.counselor}
+              onChange={(e) => handleFilterChange('counselor', e.target.value)}
+            >
+              <option value="">All Counselors</option>
+              {filterOptions.counselors.map((cn) => (
+                <option key={cn} value={cn}>{cn}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Department */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Department</label>
+            <select
+              className="form-input text-xs py-2"
+              value={filters.department}
+              onChange={(e) => handleFilterChange('department', e.target.value)}
+            >
+              <option value="">All Departments</option>
+              {filterOptions.departments.map((dp) => (
+                <option key={dp} value={dp}>{dp}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* College */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">College</label>
+            <select
+              className="form-input text-xs py-2"
+              value={filters.college}
+              onChange={(e) => handleFilterChange('college', e.target.value)}
+            >
+              <option value="">All Colleges</option>
+              {filterOptions.colleges.map((col) => (
+                <option key={col} value={col}>{col}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Date Range */}
+          <div>
+            <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Date Range</label>
+            <div className="grid grid-cols-2 gap-1">
+              <input
+                type="date"
+                className="form-input text-[11px] p-1.5"
+                value={filters.dateFrom}
+                onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
+              />
+              <input
+                type="date"
+                className="form-input text-[11px] p-1.5"
+                value={filters.dateTo}
+                onChange={(e) => handleFilterChange('dateTo', e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Quick State Chips */}
+        <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-gray-100">
+          <span className="text-xs font-bold text-gray-400">Quick State Filters:</span>
+          {['Maharashtra', 'Karnataka', 'Delhi', 'Tamil Nadu', 'Gujarat'].map((st) => (
+            <button
+              key={st}
+              type="button"
+              onClick={() => handleFilterChange('state', filters.state === st ? '' : st)}
+              className={`text-xs px-2 py-0.5 rounded-full border transition-all ${
+                filters.state.toLowerCase() === st.toLowerCase()
+                  ? 'bg-rose-500 text-white border-rose-500 font-bold shadow-xs'
+                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+              }`}
+            >
+              📍 {st}
+            </button>
+          ))}
+        </div>
+      </Card>
+
+      {/* Smart Filtered Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
         <StatsCard
-          title="Total Students"
-          value={stats?.totalStudents || 0}
+          title="Filtered Students"
+          value={loading ? '...' : deepStats?.totalStudents || 0}
           icon={HiUsers}
           color="indigo"
-          description="Total student registrations"
-        />
-        <StatsCard
-          title="Employee Entries"
-          value={stats?.totalSubmissions || 0}
-          icon={HiDocumentText}
-          color="violet"
-          description="Submissions by employees"
-        />
-        <StatsCard
-          title="Total Matches"
-          value={stats?.totalMatches || 0}
-          icon={HiCheckCircle}
-          color="emerald"
-          description="Verified match cases"
-        />
-        <StatsCard
-          title="Total Mismatches"
-          value={stats?.totalMismatches || 0}
-          icon={HiExclamationTriangle}
-          color="rose"
-          description="Mismatched information"
-        />
-        <StatsCard
-          title="Fraud Alerts"
-          value={stats?.fraudAlerts || 0}
-          icon={HiBell}
-          color="amber"
-          description="High risk profiles flagged"
+          description="Total matching students"
         />
         <StatsCard
           title="Revenue Collected"
-          value={formatCurrency(stats?.totalRevenue || 0)}
+          value={loading ? '...' : formatCurrency(deepStats?.totalCollected)}
           icon={HiCurrencyRupee}
           color="teal"
-          description="Sum of student payments"
+          description="Total fees collected"
+        />
+        <StatsCard
+          title="Pending Dues"
+          value={loading ? '...' : formatCurrency(deepStats?.totalPending)}
+          icon={HiExclamationCircle}
+          color="amber"
+          description={`${deepStats?.pendingStudentsCount || 0} students with dues`}
+        />
+        <StatsCard
+          title="Fully Paid Students"
+          value={loading ? '...' : deepStats?.paidStudentsCount || 0}
+          icon={HiCheckCircle}
+          color="emerald"
+          description="Zero pending balance"
+        />
+        <StatsCard
+          title="Avg Program Fee"
+          value={loading ? '...' : formatCurrency(deepStats?.avgProgramPrice)}
+          icon={HiAcademicCap}
+          color="purple"
+          description="Average course cost"
+        />
+        <StatsCard
+          title="Avg Due / Defaulter"
+          value={loading ? '...' : formatCurrency(deepStats?.avgPendingAmount)}
+          icon={HiExclamationTriangle}
+          color="rose"
+          description="Avg pending amount"
         />
       </div>
 
-      {/* Charts Grid */}
+      {/* Main Charts Row 1: State Breakdown & Course Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Monthly Enrollment Trend */}
-        <Card title="Monthly Enrollment Trend" className="p-4" variant="glass">
+        {/* State Breakdown */}
+        <Card
+          title="State-Wise Distribution"
+          subtitle="Click state to drill down"
+          className="p-4"
+          variant="glass"
+        >
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={enrollmentData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorEnroll" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip />
-                <Area type="monotone" dataKey="count" name="Enrollments" stroke="#4f46e5" strokeWidth={2} fillOpacity={1} fill="url(#colorEnroll)" />
-              </AreaChart>
-            </ResponsiveContainer>
+            {loading ? (
+              <Skeleton variant="card" className="h-full" />
+            ) : stateBreakdown.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={stateBreakdown} margin={{ top: 10, right: 10, left: 0, bottom: 35 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="state" stroke="#94a3b8" fontSize={11} angle={-30} textAnchor="end" tickLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    formatter={(value, name) => [
+                      name === 'count' ? `${value} Students` : formatCurrency(value),
+                      name === 'count' ? 'Enrolled' : name === 'totalCollected' ? 'Collected' : 'Pending'
+                    ]}
+                  />
+                  <Bar dataKey="count" name="count" fill="#e11d48" radius={[4, 4, 0, 0]} onClick={(data) => navigateToStudents({ state: data.state })} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400 text-xs">No state data available</div>
+            )}
           </div>
         </Card>
 
-        {/* Revenue Analytics */}
-        <Card title="Revenue Analytics" className="p-4" variant="glass">
+        {/* Course Breakdown */}
+        <Card
+          title="Course Enrollments & Revenue"
+          subtitle="Performance across courses"
+          className="p-4"
+          variant="glass"
+        >
           <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(value) => formatCurrency(value)} />
-                <Bar dataKey="amount" name="Revenue (₹)" fill="#14b8a6" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
-        {/* Match vs Mismatch */}
-        <Card title="Match vs Mismatch Distribution" className="p-4" variant="glass">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div className="h-60">
+            {loading ? (
+              <Skeleton variant="card" className="h-full" />
+            ) : courseBreakdown.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={matchData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {matchData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
+                <BarChart data={courseBreakdown} layout="vertical" margin={{ top: 10, right: 20, left: 40, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
+                  <XAxis type="number" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis type="category" dataKey="course" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} width={100} />
+                  <Tooltip formatter={(value) => [`${value} Students`, 'Total Enrolled']} />
+                  <Bar dataKey="count" name="Students" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={16} onClick={(data) => navigateToStudents({ course: data.course })} />
+                </BarChart>
               </ResponsiveContainer>
-            </div>
-            <div className="space-y-4">
-              {matchData.map((entry, i) => {
-                const total = matchData.reduce((acc, curr) => acc + curr.value, 0);
-                const percent = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
-                return (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }}></div>
-                      <span className="text-sm font-semibold text-gray-700">{entry.name}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-sm font-extrabold text-gray-800 block">{entry.value}</span>
-                      <span className="text-xs text-gray-400 font-medium">{percent}%</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </Card>
-
-        {/* Fraud Severity */}
-        <Card title="Fraud Risk Breakdown" className="p-4" variant="glass">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div className="h-60">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={fraudData}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {fraudData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={CHART_COLORS[(index + 2) % CHART_COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="space-y-4">
-              {fraudData.map((entry, i) => {
-                const total = fraudData.reduce((acc, curr) => acc + curr.value, 0);
-                const percent = total > 0 ? ((entry.value / total) * 100).toFixed(1) : 0;
-                return (
-                  <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-gray-50 border border-gray-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: CHART_COLORS[(i + 2) % CHART_COLORS.length] }}></div>
-                      <span className="text-sm font-semibold text-gray-700">{entry.name}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-sm font-extrabold text-gray-800 block">{entry.value}</span>
-                      <span className="text-xs text-gray-400 font-medium">{percent}%</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400 text-xs">No course data available</div>
+            )}
           </div>
         </Card>
       </div>
 
-      {/* Tables Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Students */}
+      {/* Main Charts Row 2: Counselor Metrics & Monthly Financial Trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Counselor Performance Table & Chart */}
         <Card
-          title="Recent Registrations"
-          subtitle="Latest students enrolled"
-          className="p-4"
-          headerAction={
-            <Link to="/admin/students" className="text-xs text-primary-500 font-semibold hover:underline flex items-center gap-0.5">
-              View All <HiChevronRight className="w-3 h-3" />
-            </Link>
-          }
+          title="Counselor Distribution"
+          subtitle="Enrollment volume per counselor"
+          className="p-4 lg:col-span-1"
+          variant="glass"
         >
+          <div className="h-72 overflow-y-auto pr-1 space-y-2">
+            {loading ? (
+              <Skeleton variant="card" className="h-full" />
+            ) : counselorPerformance.map((c, i) => (
+              <div
+                key={c.counselor}
+                onClick={() => navigateToStudents({ counselor: c.counselor })}
+                className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 hover:bg-indigo-50 border border-gray-100 hover:border-indigo-200 transition-all cursor-pointer group"
+              >
+                <div>
+                  <h4 className="text-xs font-bold text-gray-800 group-hover:text-indigo-900">{c.counselor}</h4>
+                  <span className="text-[10px] text-gray-400 font-semibold block">
+                    Collected: {formatCurrency(c.totalCollected)}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-black text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                    {c.count} std
+                  </span>
+                  {c.totalPending > 0 && (
+                    <span className="text-[10px] text-amber-600 font-bold block mt-0.5">
+                      Due: {formatCurrency(c.totalPending)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Monthly Collection Trend (Collected vs Pending) */}
+        <Card
+          title="Monthly Financial Collection vs Pending Dues"
+          subtitle="12-month financial comparison"
+          className="p-4 lg:col-span-2"
+          variant="glass"
+        >
+          <div className="h-72">
+            {loading ? (
+              <Skeleton variant="card" className="h-full" />
+            ) : monthlyCollection.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={monthlyCollection} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Legend />
+                  <Area type="monotone" dataKey="collected" name="Collected Fees (₹)" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorCollected)" />
+                  <Area type="monotone" dataKey="pending" name="Pending Dues (₹)" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorPending)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400 text-xs">No monthly trend data available</div>
+            )}
+          </div>
+        </Card>
+      </div>
+
+      {/* Main Charts Row 3: Department, Payment Mode & College Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Department Breakdown */}
+        <Card title="Department Distribution" subtitle="Students by department" className="p-4" variant="glass">
+          <div className="h-60">
+            {loading ? (
+              <Skeleton variant="card" className="h-full" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={deptBreakdown}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={70}
+                    paddingAngle={3}
+                    dataKey="count"
+                    nameKey="department"
+                  >
+                    {deptBreakdown.map((entry, index) => (
+                      <Cell key={`dept-${index}`} fill={DEPT_COLORS[index % DEPT_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(val) => [`${val} Students`, 'Total']} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </Card>
+
+        {/* Payment Mode Breakdown */}
+        <Card title="Payment Mode Breakdown" subtitle="Payment methods used" className="p-4" variant="glass">
+          <div className="h-60">
+            {loading ? (
+              <Skeleton variant="card" className="h-full" />
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={paymentModeBreakdown}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={45}
+                    outerRadius={70}
+                    paddingAngle={3}
+                    dataKey="count"
+                    nameKey="mode"
+                  >
+                    {paymentModeBreakdown.map((entry, index) => (
+                      <Cell key={`pmode-${index}`} fill={PAYMENT_MODE_COLORS[index % PAYMENT_MODE_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(val) => [`${val} Students`, 'Total']} />
+                  <Legend />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
+          </div>
+        </Card>
+
+        {/* College Distribution List */}
+        <Card title="Top Colleges" subtitle="Institutions represented" className="p-4" variant="glass">
+          <div className="h-60 overflow-y-auto pr-1 space-y-2">
+            {loading ? (
+              <Skeleton variant="card" className="h-full" />
+            ) : collegeBreakdown.map((cl, i) => (
+              <div key={cl.college} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 border border-gray-100 text-xs">
+                <span className="font-semibold text-gray-700 truncate max-w-[170px]" title={cl.college}>
+                  {cl.college}
+                </span>
+                <span className="font-bold text-gray-900 bg-white px-2 py-0.5 rounded border border-gray-200">
+                  {cl.count} std
+                </span>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Top Defaulters Table (Audit Dues) */}
+      <Card
+        title="Top Defaulters (Highest Pending Dues)"
+        subtitle="Students requiring fee collection follow-up"
+        className="p-4"
+        headerAction={
+          <Button
+            variant="outline"
+            className="text-xs border-amber-300 text-amber-800 hover:bg-amber-50"
+            onClick={() => navigateToStudents({ paymentStatus: 'pending' })}
+          >
+            View All Pending Dues ({deepStats?.pendingStudentsCount || 0})
+          </Button>
+        }
+      >
+        {loading ? (
+          <Skeleton variant="card" className="h-48" />
+        ) : topDefaulters.length > 0 ? (
           <Table
-            headers={['Ref ID', 'Name', 'Course', 'Amount']}
-            rows={recentStudents.map((st) => [
-              <span className="font-mono text-xs font-bold text-gray-800" key={st.id}>{st.reference_id}</span>,
-              <span className="font-medium text-gray-800" key={st.id}>{st.full_name}</span>,
-              <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full" key={st.id}>{st.course_name}</span>,
-              <span className="font-bold text-gray-800" key={st.id}>{formatCurrency(st.payment_amount)}</span>
+            headers={['Ref ID', 'Student Name', 'State', 'Counselor', 'Course', 'Program Fee', 'Received', 'Pending Amount', 'Contact']}
+            rows={topDefaulters.map((st) => [
+              <span className="font-mono text-xs font-bold text-gray-800" key={`d-ref-${st.id}`}>{st.reference_id}</span>,
+              <div key={`d-name-${st.id}`}>
+                <div className="font-semibold text-gray-900">{st.full_name}</div>
+                <div className="text-[11px] text-gray-400">{st.college_name || '—'}</div>
+              </div>,
+              <span className="text-xs font-semibold text-rose-700 bg-rose-50 px-2 py-0.5 rounded" key={`d-st-${st.id}`}>{st.state || '—'}</span>,
+              <span className="text-xs font-medium text-gray-700" key={`d-cn-${st.id}`}>{st.counselor_name || '—'}</span>,
+              <span className="text-xs font-medium text-gray-600" key={`d-crs-${st.id}`}>{st.course_opted || '—'}</span>,
+              <span className="font-bold text-gray-800" key={`d-prg-${st.id}`}>{formatCurrency(st.program_price)}</span>,
+              <span className="font-bold text-emerald-600" key={`d-rcv-${st.id}`}>{formatCurrency(st.amount_received)}</span>,
+              <span className="font-black text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200" key={`d-pnd-${st.id}`}>
+                {formatCurrency(st.pending_amount)}
+              </span>,
+              <div className="text-[11px] font-mono text-gray-600" key={`d-cnt-${st.id}`}>
+                <div>{st.phone_no || '—'}</div>
+                <div className="text-[10px] text-gray-400">{st.email || ''}</div>
+              </div>
             ])}
           />
-        </Card>
-
-        {/* High Risk Fraud Alerts */}
-        <Card
-          title="Critical Fraud Flags"
-          subtitle="Alerts requiring immediate attention"
-          className="p-4"
-          headerAction={
-            <Link to="/admin/fraud-reports" className="text-xs text-primary-500 font-semibold hover:underline flex items-center gap-0.5">
-              View All <HiChevronRight className="w-3 h-3" />
-            </Link>
-          }
-        >
-          {recentAlerts.length > 0 ? (
-            <Table
-              headers={['Ref ID', 'Score', 'Status', 'Difference']}
-              rows={recentAlerts.map((al) => [
-                <span className="font-mono text-xs font-bold text-gray-800" key={al.id}>{al.reference_id}</span>,
-                <Badge variant="danger" key={al.id}>{al.fraud_score} / 100</Badge>,
-                <span className="text-xs text-red-600 font-bold" key={al.id}>{al.match_status}</span>,
-                <span className="font-bold text-red-600" key={al.id}>{formatCurrency(al.difference_amount)}</span>
-              ])}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center py-10 bg-surface-50 border border-dashed border-gray-200 rounded-2xl">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mb-2">
-                <HiCheckCircle className="w-6 h-6" />
-              </div>
-              <p className="text-sm font-semibold text-gray-700">No High Risk Alerts</p>
-              <p className="text-xs text-gray-400">All submissions are currently safe.</p>
-            </div>
-          )}
-        </Card>
-      </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-8 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <HiCheckCircle className="w-10 h-10 text-emerald-500 mb-2" />
+            <p className="text-sm font-semibold text-gray-700">Zero Pending Dues Found!</p>
+            <p className="text-xs text-gray-400">All filtered students have fully settled their payments.</p>
+          </div>
+        )}
+      </Card>
     </div>
   );
 }
