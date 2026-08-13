@@ -12,18 +12,34 @@ router.use(roleCheck(['admin']));
 // GET /api/export/students/pdf - Export students to PDF
 router.get('/students/pdf', async (req, res, next) => {
   try {
-    const { search, course, dateFrom, dateTo } = req.query;
+    const { search, course, state, paymentStatus, dateFrom, dateTo } = req.query;
 
     const whereClause = {};
     if (search) {
       whereClause[Op.or] = [
         { full_name: { [Op.like]: `%${search}%` } },
         { reference_id: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } }
+        { email: { [Op.like]: `%${search}%` } },
+        { phone_no: { [Op.like]: `%${search}%` } },
+        { college_name: { [Op.like]: `%${search}%` } }
       ];
     }
     if (course) {
-      whereClause.course_name = course;
+      whereClause[Op.or] = [
+        { course_name: { [Op.like]: `%${course}%` } },
+        { course_opted: { [Op.like]: `%${course}%` } }
+      ];
+    }
+    if (state) {
+      whereClause.state = { [Op.like]: `%${state}%` };
+    }
+    if (paymentStatus === 'pending') {
+      whereClause.pending_amount = { [Op.gt]: 0 };
+    } else if (paymentStatus === 'paid') {
+      whereClause[Op.or] = [
+        { pending_amount: { [Op.lte]: 0 } },
+        { pending_amount: null }
+      ];
     }
     if (dateFrom || dateTo) {
       whereClause.created_at = {};
@@ -53,18 +69,34 @@ router.get('/students/pdf', async (req, res, next) => {
 // GET /api/export/students/excel - Export students to Excel
 router.get('/students/excel', async (req, res, next) => {
   try {
-    const { search, course, dateFrom, dateTo } = req.query;
+    const { search, course, state, paymentStatus, dateFrom, dateTo } = req.query;
 
     const whereClause = {};
     if (search) {
       whereClause[Op.or] = [
         { full_name: { [Op.like]: `%${search}%` } },
         { reference_id: { [Op.like]: `%${search}%` } },
-        { email: { [Op.like]: `%${search}%` } }
+        { email: { [Op.like]: `%${search}%` } },
+        { phone_no: { [Op.like]: `%${search}%` } },
+        { college_name: { [Op.like]: `%${search}%` } }
       ];
     }
     if (course) {
-      whereClause.course_name = course;
+      whereClause[Op.or] = [
+        { course_name: { [Op.like]: `%${course}%` } },
+        { course_opted: { [Op.like]: `%${course}%` } }
+      ];
+    }
+    if (state) {
+      whereClause.state = { [Op.like]: `%${state}%` };
+    }
+    if (paymentStatus === 'pending') {
+      whereClause.pending_amount = { [Op.gt]: 0 };
+    } else if (paymentStatus === 'paid') {
+      whereClause[Op.or] = [
+        { pending_amount: { [Op.lte]: 0 } },
+        { pending_amount: null }
+      ];
     }
     if (dateFrom || dateTo) {
       whereClause.created_at = {};

@@ -196,7 +196,7 @@ router.get(
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 10;
       const offset = (page - 1) * limit;
-      const { search, course, dateFrom, dateTo } = req.query;
+      const { search, course, state, paymentStatus, counselor, department, dateFrom, dateTo } = req.query;
 
       // Build where clause
       const where = {};
@@ -205,12 +205,38 @@ router.get(
         where[Op.or] = [
           { full_name: { [Op.like]: `%${search}%` } },
           { reference_id: { [Op.like]: `%${search}%` } },
-          { email: { [Op.like]: `%${search}%` } }
+          { email: { [Op.like]: `%${search}%` } },
+          { phone_no: { [Op.like]: `%${search}%` } },
+          { college_name: { [Op.like]: `%${search}%` } }
         ];
       }
 
       if (course) {
-        where.course_name = { [Op.like]: `%${course}%` };
+        where[Op.or] = [
+          { course_name: { [Op.like]: `%${course}%` } },
+          { course_opted: { [Op.like]: `%${course}%` } }
+        ];
+      }
+
+      if (state) {
+        where.state = { [Op.like]: `%${state}%` };
+      }
+
+      if (counselor) {
+        where.counselor_name = { [Op.like]: `%${counselor}%` };
+      }
+
+      if (department) {
+        where.department = { [Op.like]: `%${department}%` };
+      }
+
+      if (paymentStatus === 'pending') {
+        where.pending_amount = { [Op.gt]: 0 };
+      } else if (paymentStatus === 'paid') {
+        where[Op.or] = [
+          { pending_amount: { [Op.lte]: 0 } },
+          { pending_amount: null }
+        ];
       }
 
       if (dateFrom || dateTo) {
