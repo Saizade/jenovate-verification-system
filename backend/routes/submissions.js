@@ -37,8 +37,16 @@ router.post(
 
       const {
         reference_id, date, student_name, whatsapp_no, email,
-        course_opted, fees_paid, program_price, pending_amount, remarks
+        course_opted, num_courses_selected, primary_course, secondary_course, tertiary_course,
+        fees_paid, program_price, pending_amount, payment_mode, revenue_channel, remarks
       } = req.body;
+
+      // Construct course_opted if not explicitly given
+      let finalCourseOpted = course_opted;
+      if (!finalCourseOpted) {
+        const courses = [primary_course, secondary_course, tertiary_course].filter(Boolean);
+        finalCourseOpted = courses.join(', ');
+      }
 
       // Create submission
       const submission = await EmployeeSubmission.create({
@@ -48,10 +56,16 @@ router.post(
         student_name,
         whatsapp_no: whatsapp_no || null,
         email: email || null,
-        course_opted,
+        course_opted: finalCourseOpted || null,
+        num_courses_selected: parseInt(num_courses_selected) || 1,
+        primary_course: primary_course || null,
+        secondary_course: secondary_course || null,
+        tertiary_course: tertiary_course || null,
         fees_paid: parseFloat(fees_paid),
         program_price: program_price ? parseFloat(program_price) : null,
         pending_amount: pending_amount ? parseFloat(pending_amount) : null,
+        payment_mode: payment_mode || null,
+        revenue_channel: revenue_channel || null,
         remarks: remarks || null,
         is_locked: true
       });

@@ -30,6 +30,19 @@ const EmployeeSubmission = sequelize.define('EmployeeSubmission', {
   course_opted: {
     type: DataTypes.STRING
   },
+  num_courses_selected: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1
+  },
+  primary_course: {
+    type: DataTypes.STRING
+  },
+  secondary_course: {
+    type: DataTypes.STRING
+  },
+  tertiary_course: {
+    type: DataTypes.STRING
+  },
   fees_paid: {
     type: DataTypes.DECIMAL(10, 2)
   },
@@ -38,6 +51,12 @@ const EmployeeSubmission = sequelize.define('EmployeeSubmission', {
   },
   pending_amount: {
     type: DataTypes.DECIMAL(10, 2)
+  },
+  payment_mode: {
+    type: DataTypes.STRING
+  },
+  revenue_channel: {
+    type: DataTypes.STRING
   },
   remarks: {
     type: DataTypes.TEXT

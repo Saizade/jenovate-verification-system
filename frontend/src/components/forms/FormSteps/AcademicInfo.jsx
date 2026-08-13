@@ -1,11 +1,37 @@
-import { HiAcademicCap, HiBuildingLibrary, HiBookOpen, HiMapPin, HiRectangleStack } from 'react-icons/hi2';
+import { useEffect } from 'react';
+import { HiAcademicCap, HiBuildingLibrary, HiBookOpen, HiMapPin, HiHashtag } from 'react-icons/hi2';
 
-export default function AcademicInfo({ register, errors }) {
+export default function AcademicInfo({ register, errors, watch, setValue }) {
+  const numCoursesSelected = parseInt(watch('numCoursesSelected') || '1', 10);
+  const primaryCourse = watch('primaryCourse') || '';
+  const secondaryCourse = watch('secondaryCourse') || '';
+  const tertiaryCourse = watch('tertiaryCourse') || '';
+
+  // Auto-sync typeOfPack and combined courseOpted
+  useEffect(() => {
+    const packNames = { 1: 'Single Course', 2: 'Dual Course', 3: 'Triple courses' };
+    setValue('typeOfPack', packNames[numCoursesSelected] || 'Single Course');
+
+    // Clean up unselected fields when course count drops
+    if (numCoursesSelected < 2) {
+      setValue('secondaryCourse', '');
+    }
+    if (numCoursesSelected < 3) {
+      setValue('tertiaryCourse', '');
+    }
+  }, [numCoursesSelected, setValue]);
+
+  // Keep courseOpted updated for backward compatibility
+  useEffect(() => {
+    const courses = [primaryCourse, secondaryCourse, tertiaryCourse].slice(0, numCoursesSelected).filter(Boolean);
+    setValue('courseOpted', courses.join(', '));
+  }, [primaryCourse, secondaryCourse, tertiaryCourse, numCoursesSelected, setValue]);
+
   return (
     <div className="space-y-6 animate-stagger">
       <div className="mb-2">
         <h3 className="text-lg font-semibold text-gray-800">Institution & Academic Details</h3>
-        <p className="text-sm text-gray-500 mt-1">Specify college, state, department, courses, and pack details.</p>
+        <p className="text-sm text-gray-500 mt-1">Specify college, state, department, and selected courses.</p>
       </div>
 
       {/* College Name and State */}
@@ -47,7 +73,7 @@ export default function AcademicInfo({ register, errors }) {
         </div>
       </div>
 
-      {/* Department & Course Opted */}
+      {/* Department & Number of Courses Selected */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
           <label htmlFor="reg-department" className="form-label">
@@ -68,88 +94,99 @@ export default function AcademicInfo({ register, errors }) {
         </div>
 
         <div>
-          <label htmlFor="reg-course-opted" className="form-label">
-            Course Opted <span className="text-red-500">*</span>
+          <label htmlFor="reg-num-courses" className="form-label">
+            Number of Courses Selected <span className="text-red-500">*</span>
           </label>
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <HiBookOpen className="w-4.5 h-4.5 text-gray-400" />
+              <HiHashtag className="w-4.5 h-4.5 text-primary-600" />
             </div>
+            <select
+              id="reg-num-courses"
+              className="form-select pl-10 border-primary-300 font-semibold text-primary-950 bg-primary-50/30"
+              {...register('numCoursesSelected', { required: 'Please select number of courses' })}
+            >
+              <option value="1">1 Course</option>
+              <option value="2">2 Courses</option>
+              <option value="3">3 Courses</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Dynamic Course Input Boxes (Pop up according to selected number) */}
+      <div className="p-5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-4">
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-bold text-gray-800 flex items-center gap-2">
+            <HiBookOpen className="w-5 h-5 text-primary-600" />
+            Selected Course Name(s) ({numCoursesSelected} {numCoursesSelected === 1 ? 'course' : 'courses'})
+          </label>
+          <span className="text-xs font-semibold text-primary-700 bg-primary-100/60 px-2.5 py-0.5 rounded-full">
+            {numCoursesSelected === 1 ? 'Single Pack' : numCoursesSelected === 2 ? 'Dual Pack' : 'Triple Pack'}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          {/* Course 1 Box */}
+          <div className="transition-all duration-300 animate-fade-in">
+            <label htmlFor="reg-primary-course" className="block text-xs font-semibold text-gray-700 mb-1">
+              Course 1 Name <span className="text-red-500">*</span>
+            </label>
             <input
-              id="reg-course-opted"
+              id="reg-primary-course"
               type="text"
-              placeholder="e.g. Psychology & Mental Health, FINANCE & STOCK MARKET"
-              className={`form-input pl-10 ${errors.courseOpted ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : ''}`}
-              {...register('courseOpted', { required: 'Course opted is required' })}
+              placeholder="e.g. Psychology & Mental Health"
+              className={`form-input bg-white ${errors.primaryCourse ? 'border-red-300 focus:ring-red-200' : ''}`}
+              {...register('primaryCourse', {
+                required: 'Course 1 name is required'
+              })}
             />
+            {errors.primaryCourse && <p className="form-error">{errors.primaryCourse.message}</p>}
           </div>
-          {errors.courseOpted && <p className="form-error">{errors.courseOpted.message}</p>}
+
+          {/* Course 2 Box (Pops up if numCoursesSelected >= 2) */}
+          {numCoursesSelected >= 2 && (
+            <div className="transition-all duration-300 animate-fade-in">
+              <label htmlFor="reg-secondary-course" className="block text-xs font-semibold text-gray-700 mb-1">
+                Course 2 Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="reg-secondary-course"
+                type="text"
+                placeholder="e.g. Clinical Research & Neuroscience"
+                className={`form-input bg-white ${errors.secondaryCourse ? 'border-red-300 focus:ring-red-200' : ''}`}
+                {...register('secondaryCourse', {
+                  required: numCoursesSelected >= 2 ? 'Course 2 name is required' : false
+                })}
+              />
+              {errors.secondaryCourse && <p className="form-error">{errors.secondaryCourse.message}</p>}
+            </div>
+          )}
+
+          {/* Course 3 Box (Pops up if numCoursesSelected >= 3) */}
+          {numCoursesSelected >= 3 && (
+            <div className="transition-all duration-300 animate-fade-in">
+              <label htmlFor="reg-tertiary-course" className="block text-xs font-semibold text-gray-700 mb-1">
+                Course 3 Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                id="reg-tertiary-course"
+                type="text"
+                placeholder="e.g. Data Analytics in Healthcare"
+                className={`form-input bg-white ${errors.tertiaryCourse ? 'border-red-300 focus:ring-red-200' : ''}`}
+                {...register('tertiaryCourse', {
+                  required: numCoursesSelected >= 3 ? 'Course 3 name is required' : false
+                })}
+              />
+              {errors.tertiaryCourse && <p className="form-error">{errors.tertiaryCourse.message}</p>}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Primary, Secondary, Tertiary Courses */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div>
-          <label htmlFor="reg-primary-course" className="form-label">
-            Primary Course
-          </label>
-          <input
-            id="reg-primary-course"
-            type="text"
-            placeholder="e.g. psychology, finance & accounting"
-            className="form-input"
-            {...register('primaryCourse')}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="reg-secondary-course" className="form-label">
-            Secondary Course
-          </label>
-          <input
-            id="reg-secondary-course"
-            type="text"
-            placeholder="e.g. nil, clinical research"
-            className="form-input"
-            {...register('secondaryCourse')}
-          />
-        </div>
-
-        <div>
-          <label htmlFor="reg-tertiary-course" className="form-label">
-            Tertiary Course
-          </label>
-          <input
-            id="reg-tertiary-course"
-            type="text"
-            placeholder="e.g. nil"
-            className="form-input"
-            {...register('tertiaryCourse')}
-          />
-        </div>
-      </div>
-
-      {/* Type of Pack */}
-      <div>
-        <label htmlFor="reg-type-of-pack" className="form-label">
-          Type of Pack
-        </label>
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-            <HiRectangleStack className="w-4.5 h-4.5 text-gray-400" />
-          </div>
-          <select
-            id="reg-type-of-pack"
-            className="form-select pl-10"
-            {...register('typeOfPack')}
-          >
-            <option value="">Select Pack Type</option>
-            <option value="Single Course">Single Course</option>
-            <option value="Dual Course">Dual Course</option>
-            <option value="Triple courses">Triple courses</option>
-          </select>
-        </div>
-      </div>
+      {/* Hidden typeOfPack & courseOpted inputs registered to form */}
+      <input type="hidden" {...register('typeOfPack')} />
+      <input type="hidden" {...register('courseOpted')} />
     </div>
   );
 }

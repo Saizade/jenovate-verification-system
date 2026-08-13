@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { HiCurrencyRupee, HiCreditCard, HiCalendarDays, HiTag } from 'react-icons/hi2';
+import { HiCurrencyRupee, HiCalendarDays, HiTag } from 'react-icons/hi2';
 
 export default function PaymentInfo({ register, errors, watch, setValue }) {
   const programPrice = watch('programPrice') || 0;
@@ -16,7 +16,7 @@ export default function PaymentInfo({ register, errors, watch, setValue }) {
     <div className="space-y-6 animate-stagger">
       <div className="mb-2">
         <h3 className="text-lg font-semibold text-gray-800">Course Status & Payment Details</h3>
-        <p className="text-sm text-gray-500 mt-1">Provide month opted, course type, financial amounts, and revenue channel.</p>
+        <p className="text-sm text-gray-500 mt-1">Provide month opted, course type, and financial amounts.</p>
       </div>
 
       {/* Month Opted & Type of Course */}
@@ -113,45 +113,6 @@ export default function PaymentInfo({ register, errors, watch, setValue }) {
               placeholder="0"
               className="form-input pl-10 bg-gray-50 font-semibold"
               {...register('pendingAmount')}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Payment Mode & Revenue Channel */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div>
-          <label htmlFor="reg-payment-mode" className="form-label">
-            Payment Mode
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <HiCreditCard className="w-4.5 h-4.5 text-gray-400" />
-            </div>
-            <input
-              id="reg-payment-mode"
-              type="text"
-              placeholder="e.g. razorpay, QR, Phonepe, Razorpay + QR"
-              className="form-input pl-10"
-              {...register('paymentMode')}
-            />
-          </div>
-        </div>
-
-        <div>
-          <label htmlFor="reg-revenue-channel" className="form-label">
-            Revenue Channel
-          </label>
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-              <HiTag className="w-4.5 h-4.5 text-gray-400" />
-            </div>
-            <input
-              id="reg-revenue-channel"
-              type="text"
-              placeholder="e.g. Call & Convert, Personal Sale, Refferal"
-              className="form-input pl-10"
-              {...register('revenueChannel')}
             />
           </div>
         </div>

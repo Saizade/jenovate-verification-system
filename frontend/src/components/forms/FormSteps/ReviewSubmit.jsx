@@ -47,21 +47,18 @@ export default function ReviewSubmit({ watch }) {
     { label: 'College Name', value: data.collegeName },
     { label: 'State', value: data.state },
     { label: 'Department', value: data.department },
-    { label: 'Course Opted', value: data.courseOpted },
-    { label: 'Primary Course', value: data.primaryCourse },
-    { label: 'Secondary Course', value: data.secondaryCourse },
-    { label: 'Tertiary Course', value: data.tertiaryCourse },
-    { label: 'Type of Pack', value: data.typeOfPack },
+    { label: 'No. of Courses Selected', value: `${data.numCoursesSelected || 1} (${data.typeOfPack || 'Single Course'})` },
+    { label: 'Course 1 (Primary)', value: data.primaryCourse || data.courseOpted },
+    ...(parseInt(data.numCoursesSelected) >= 2 ? [{ label: 'Course 2 (Secondary)', value: data.secondaryCourse }] : []),
+    ...(parseInt(data.numCoursesSelected) >= 3 ? [{ label: 'Course 3 (Tertiary)', value: data.tertiaryCourse }] : []),
   ];
 
   const paymentItems = [
     { label: 'Month Opted', value: data.monthOpted },
     { label: 'Type of Course', value: data.typeOfCourse },
-    { label: 'Payment Mode', value: data.paymentMode },
     { label: 'Program Price', value: formatCurrency(data.programPrice) },
     { label: 'Amount Received', value: formatCurrency(data.amountReceived) },
     { label: 'Pending Amount', value: formatCurrency(data.pendingAmount) },
-    { label: 'Revenue Channel', value: data.revenueChannel },
   ];
 
   return (

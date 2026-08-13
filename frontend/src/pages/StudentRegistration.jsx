@@ -47,18 +47,17 @@ export default function StudentRegistration() {
       collegeName: '',
       state: '',
       department: '',
+      numCoursesSelected: '1',
       courseOpted: '',
       primaryCourse: '',
       secondaryCourse: '',
       tertiaryCourse: '',
-      typeOfPack: '',
+      typeOfPack: 'Single Course',
       monthOpted: '',
       typeOfCourse: '',
-      paymentMode: '',
       programPrice: '',
       amountReceived: '',
-      pendingAmount: '',
-      revenueChannel: ''
+      pendingAmount: ''
     }
   });
 
@@ -67,7 +66,10 @@ export default function StudentRegistration() {
     if (currentStep === 0) {
       fieldsToValidate = ['fullName'];
     } else if (currentStep === 1) {
-      fieldsToValidate = ['courseOpted'];
+      const num = parseInt(watch('numCoursesSelected') || '1', 10);
+      fieldsToValidate = ['numCoursesSelected', 'primaryCourse'];
+      if (num >= 2) fieldsToValidate.push('secondaryCourse');
+      if (num >= 3) fieldsToValidate.push('tertiaryCourse');
     }
 
     const isValid = await trigger(fieldsToValidate);

@@ -10,17 +10,8 @@ import Skeleton from '../components/ui/Skeleton';
 import StatsCard from '../components/ui/StatsCard';
 
 import {
-  HiDocumentPlus, HiClipboardDocumentList, HiCheckCircle
+  HiDocumentPlus, HiClipboardDocumentList, HiBookOpen, HiHashtag, HiCreditCard, HiTag
 } from 'react-icons/hi2';
-
-const COURSE_OPTIONS = [
-  { value: 'java_fullstack', label: 'Java Full Stack' },
-  { value: 'python_fullstack', label: 'Python Full Stack' },
-  { value: 'data_science', label: 'Data Science' },
-  { value: 'mern_stack', label: 'MERN Stack' },
-  { value: 'digital_marketing', label: 'Digital Marketing' },
-  { value: 'ui_ux_design', label: 'UI/UX Design' }
-];
 
 export default function EmployeeDashboard() {
   const [submissions, setSubmissions] = useState([]);
@@ -37,12 +28,17 @@ export default function EmployeeDashboard() {
     formState: { errors }
   } = useForm({
     defaultValues: {
-      date: '',
+      date: new Date().toISOString().split('T')[0],
       studentName: '',
       referenceId: '',
       whatsappNo: '',
       email: '',
-      courseOpted: '',
+      numCoursesSelected: '1',
+      primaryCourse: '',
+      secondaryCourse: '',
+      tertiaryCourse: '',
+      paymentMode: '',
+      revenueChannel: '',
       feesPaid: '',
       programPrice: '',
       pendingAmount: '',
@@ -50,10 +46,11 @@ export default function EmployeeDashboard() {
     }
   });
 
-  // Auto-calculate pending amount
+  const numCoursesSelected = parseInt(watch('numCoursesSelected') || '1', 10);
   const watchProgramPrice = watch('programPrice');
   const watchFeesPaid = watch('feesPaid');
 
+  // Auto-calculate pending amount
   useEffect(() => {
     const price = parseFloat(watchProgramPrice) || 0;
     const paid = parseFloat(watchFeesPaid) || 0;
@@ -62,6 +59,16 @@ export default function EmployeeDashboard() {
       setValue('pendingAmount', pending.toString());
     }
   }, [watchProgramPrice, watchFeesPaid, setValue]);
+
+  // Clean unselected course fields when numCoursesSelected decreases
+  useEffect(() => {
+    if (numCoursesSelected < 2) {
+      setValue('secondaryCourse', '');
+    }
+    if (numCoursesSelected < 3) {
+      setValue('tertiaryCourse', '');
+    }
+  }, [numCoursesSelected, setValue]);
 
   const fetchEmployeeData = async () => {
     try {
@@ -85,13 +92,23 @@ export default function EmployeeDashboard() {
   const onSubmit = async (data) => {
     setSubmitting(true);
     try {
+      const num = parseInt(data.numCoursesSelected || '1', 10);
+      const courses = [data.primaryCourse, data.secondaryCourse, data.tertiaryCourse].slice(0, num).filter(Boolean);
+      const courseOptedCombined = courses.join(', ');
+
       const payload = {
         date: data.date,
         reference_id: data.referenceId,
         student_name: data.studentName,
         whatsapp_no: data.whatsappNo,
         email: data.email,
-        course_opted: data.courseOpted,
+        num_courses_selected: num,
+        primary_course: data.primaryCourse || null,
+        secondary_course: num >= 2 ? data.secondaryCourse : null,
+        tertiary_course: num >= 3 ? data.tertiaryCourse : null,
+        course_opted: courseOptedCombined,
+        payment_mode: data.paymentMode || null,
+        revenue_channel: data.revenueChannel || null,
         fees_paid: parseFloat(data.feesPaid),
         program_price: data.programPrice ? parseFloat(data.programPrice) : null,
         pending_amount: data.pendingAmount ? parseFloat(data.pendingAmount) : null,
@@ -102,7 +119,23 @@ export default function EmployeeDashboard() {
 
       if (res.data.success) {
         toast.success('Submission saved and locked successfully!');
-        reset();
+        reset({
+          date: new Date().toISOString().split('T')[0],
+          studentName: '',
+          referenceId: '',
+          whatsappNo: '',
+          email: '',
+          numCoursesSelected: '1',
+          primaryCourse: '',
+          secondaryCourse: '',
+          tertiaryCourse: '',
+          paymentMode: '',
+          revenueChannel: '',
+          feesPaid: '',
+          programPrice: '',
+          pendingAmount: '',
+          remarks: ''
+        });
         fetchEmployeeData();
       } else {
         toast.error(res.data.message || 'Submission failed');
@@ -116,6 +149,7 @@ export default function EmployeeDashboard() {
   };
 
   const formatCurrency = (val) => {
+    if (!val && val !== 0) return '—';
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
@@ -209,94 +243,169 @@ export default function EmployeeDashboard() {
               {errors.referenceId && <p className="form-error text-xs mt-1 text-red-500">{errors.referenceId.message}</p>}
             </div>
 
-            {/* WhatsApp No */}
-            <div>
-              <label htmlFor="emp-whatsapp" className="form-label text-xs font-bold uppercase text-gray-500">
-                WhatsApp No
-              </label>
-              <input
-                id="emp-whatsapp"
-                type="tel"
-                placeholder="e.g. 9876543210"
-                className={`form-input mt-1 ${errors.whatsappNo ? 'border-red-300' : ''}`}
-                {...register('whatsappNo')}
-              />
-              {errors.whatsappNo && <p className="form-error text-xs mt-1 text-red-500">{errors.whatsappNo.message}</p>}
+            {/* WhatsApp No & Email */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="emp-whatsapp" className="form-label text-xs font-bold uppercase text-gray-500">
+                  WhatsApp No
+                </label>
+                <input
+                  id="emp-whatsapp"
+                  type="tel"
+                  placeholder="9876543210"
+                  className="form-input mt-1"
+                  {...register('whatsappNo')}
+                />
+              </div>
+              <div>
+                <label htmlFor="emp-email" className="form-label text-xs font-bold uppercase text-gray-500">
+                  Email
+                </label>
+                <input
+                  id="emp-email"
+                  type="email"
+                  placeholder="student@email.com"
+                  className="form-input mt-1"
+                  {...register('email')}
+                />
+              </div>
             </div>
 
-            {/* Email */}
+            {/* Number of Courses Selected (1 to 3) */}
             <div>
-              <label htmlFor="emp-email" className="form-label text-xs font-bold uppercase text-gray-500">
-                Email
-              </label>
-              <input
-                id="emp-email"
-                type="email"
-                placeholder="student@example.com"
-                className={`form-input mt-1 ${errors.email ? 'border-red-300' : ''}`}
-                {...register('email', {
-                  pattern: {
-                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                    message: 'Invalid email format'
-                  }
-                })}
-              />
-              {errors.email && <p className="form-error text-xs mt-1 text-red-500">{errors.email.message}</p>}
-            </div>
-
-            {/* Course Opted */}
-            <div>
-              <label htmlFor="emp-course" className="form-label text-xs font-bold uppercase text-gray-500">
-                Course Opt <span className="text-red-500">*</span>
+              <label htmlFor="emp-num-courses" className="form-label text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
+                <HiHashtag className="w-4 h-4 text-primary-600" />
+                No. of Courses Selected <span className="text-red-500">*</span>
               </label>
               <select
-                id="emp-course"
-                className={`form-input mt-1 ${errors.courseOpted ? 'border-red-300' : ''}`}
-                {...register('courseOpted', { required: 'Course is required' })}
+                id="emp-num-courses"
+                className="form-select mt-1 border-primary-300 font-semibold text-primary-950 bg-primary-50/40"
+                {...register('numCoursesSelected', { required: 'Please select number of courses' })}
               >
-                <option value="">Select Course</option>
-                {COURSE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.label}>
-                    {opt.label}
-                  </option>
-                ))}
+                <option value="1">1 Course</option>
+                <option value="2">2 Courses</option>
+                <option value="3">3 Courses</option>
               </select>
-              {errors.courseOpted && <p className="form-error text-xs mt-1 text-red-500">{errors.courseOpted.message}</p>}
             </div>
 
-            {/* Fees Paid */}
-            <div>
-              <label htmlFor="emp-fees" className="form-label text-xs font-bold uppercase text-gray-500">
-                Fees Paid (₹) <span className="text-red-500">*</span>
+            {/* Dynamic Course Name Input Boxes */}
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+              <label className="text-xs font-extrabold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
+                <HiBookOpen className="w-4 h-4 text-primary-600" />
+                Course Names ({numCoursesSelected} selected)
               </label>
-              <input
-                id="emp-fees"
-                type="number"
-                placeholder="Enter fees paid"
-                className={`form-input mt-1 ${errors.feesPaid ? 'border-red-300' : ''}`}
-                {...register('feesPaid', {
-                  required: 'Fees paid is required',
-                  min: { value: 0, message: 'Must be a positive value' }
-                })}
-              />
-              {errors.feesPaid && <p className="form-error text-xs mt-1 text-red-500">{errors.feesPaid.message}</p>}
+
+              {/* Course 1 */}
+              <div>
+                <label htmlFor="emp-primary-course" className="block text-[11px] font-semibold text-gray-600 mb-1">
+                  Course 1 Name <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="emp-primary-course"
+                  type="text"
+                  placeholder="e.g. Java Full Stack"
+                  className={`form-input bg-white text-sm ${errors.primaryCourse ? 'border-red-300' : ''}`}
+                  {...register('primaryCourse', { required: 'Course 1 is required' })}
+                />
+                {errors.primaryCourse && <p className="form-error text-xs mt-1 text-red-500">{errors.primaryCourse.message}</p>}
+              </div>
+
+              {/* Course 2 (Pops up if numCoursesSelected >= 2) */}
+              {numCoursesSelected >= 2 && (
+                <div className="animate-fade-in">
+                  <label htmlFor="emp-secondary-course" className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Course 2 Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="emp-secondary-course"
+                    type="text"
+                    placeholder="e.g. Python Full Stack"
+                    className={`form-input bg-white text-sm ${errors.secondaryCourse ? 'border-red-300' : ''}`}
+                    {...register('secondaryCourse', { required: numCoursesSelected >= 2 ? 'Course 2 is required' : false })}
+                  />
+                  {errors.secondaryCourse && <p className="form-error text-xs mt-1 text-red-500">{errors.secondaryCourse.message}</p>}
+                </div>
+              )}
+
+              {/* Course 3 (Pops up if numCoursesSelected >= 3) */}
+              {numCoursesSelected >= 3 && (
+                <div className="animate-fade-in">
+                  <label htmlFor="emp-tertiary-course" className="block text-[11px] font-semibold text-gray-600 mb-1">
+                    Course 3 Name <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    id="emp-tertiary-course"
+                    type="text"
+                    placeholder="e.g. Data Science"
+                    className={`form-input bg-white text-sm ${errors.tertiaryCourse ? 'border-red-300' : ''}`}
+                    {...register('tertiaryCourse', { required: numCoursesSelected >= 3 ? 'Course 3 is required' : false })}
+                  />
+                  {errors.tertiaryCourse && <p className="form-error text-xs mt-1 text-red-500">{errors.tertiaryCourse.message}</p>}
+                </div>
+              )}
             </div>
 
-            {/* Program Price */}
-            <div>
-              <label htmlFor="emp-program-price" className="form-label text-xs font-bold uppercase text-gray-500">
-                Program Price (₹)
-              </label>
-              <input
-                id="emp-program-price"
-                type="number"
-                placeholder="Total program price"
-                className={`form-input mt-1 ${errors.programPrice ? 'border-red-300' : ''}`}
-                {...register('programPrice', {
-                  min: { value: 0, message: 'Must be a positive value' }
-                })}
-              />
-              {errors.programPrice && <p className="form-error text-xs mt-1 text-red-500">{errors.programPrice.message}</p>}
+            {/* Payment Mode & Revenue Channel */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="emp-payment-mode" className="form-label text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
+                  <HiCreditCard className="w-4 h-4 text-emerald-600" />
+                  Payment Mode
+                </label>
+                <input
+                  id="emp-payment-mode"
+                  type="text"
+                  placeholder="Razorpay, QR, Bank"
+                  className="form-input mt-1"
+                  {...register('paymentMode')}
+                />
+              </div>
+              <div>
+                <label htmlFor="emp-revenue-channel" className="form-label text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
+                  <HiTag className="w-4 h-4 text-emerald-600" />
+                  Revenue Channel
+                </label>
+                <input
+                  id="emp-revenue-channel"
+                  type="text"
+                  placeholder="Call & Convert, Personal"
+                  className="form-input mt-1"
+                  {...register('revenueChannel')}
+                />
+              </div>
+            </div>
+
+            {/* Fees Paid & Program Price */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label htmlFor="emp-fees" className="form-label text-xs font-bold uppercase text-gray-500">
+                  Fees Paid (₹) <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="emp-fees"
+                  type="number"
+                  placeholder="Fees paid"
+                  className={`form-input mt-1 ${errors.feesPaid ? 'border-red-300' : ''}`}
+                  {...register('feesPaid', {
+                    required: 'Fees paid is required',
+                    min: { value: 0, message: 'Must be positive' }
+                  })}
+                />
+                {errors.feesPaid && <p className="form-error text-xs mt-1 text-red-500">{errors.feesPaid.message}</p>}
+              </div>
+
+              <div>
+                <label htmlFor="emp-program-price" className="form-label text-xs font-bold uppercase text-gray-500">
+                  Program Price (₹)
+                </label>
+                <input
+                  id="emp-program-price"
+                  type="number"
+                  placeholder="Total price"
+                  className="form-input mt-1"
+                  {...register('programPrice')}
+                />
+              </div>
             </div>
 
             {/* Pending Amount */}
@@ -308,12 +417,9 @@ export default function EmployeeDashboard() {
                 id="emp-pending"
                 type="number"
                 placeholder="Auto-calculated"
-                className="form-input mt-1 bg-gray-50"
-                {...register('pendingAmount', {
-                  min: { value: 0, message: 'Must be a positive value' }
-                })}
+                className="form-input mt-1 bg-gray-50 font-semibold"
+                {...register('pendingAmount')}
               />
-              <p className="text-[10px] text-gray-400 mt-0.5">Auto-calculated from Program Price − Fees Paid</p>
             </div>
 
             {/* Remarks */}
@@ -324,7 +430,7 @@ export default function EmployeeDashboard() {
               <textarea
                 id="emp-remarks"
                 placeholder="Any special remarks..."
-                className="form-input mt-1 h-20 resize-none"
+                className="form-input mt-1 h-16 resize-none"
                 {...register('remarks')}
               />
             </div>
@@ -341,15 +447,17 @@ export default function EmployeeDashboard() {
           </form>
         </Card>
 
-        {/* Previous Submissions */}
+        {/* Previous Submissions Table */}
         <Card title="My Verification Records" subtitle="Previous entries submitted by you" className="p-5 lg:col-span-2 border border-gray-100 bg-white shadow-md rounded-2xl">
           <Table
-            headers={['Date', 'Ref ID', 'Name', 'Course Opt', 'Fees Paid', 'Pending', 'Submitted At']}
+            headers={['Date', 'Ref ID', 'Name', 'Course Opted', 'Payment Mode', 'Revenue Channel', 'Fees Paid', 'Pending', 'Submitted At']}
             rows={submissions.map((sub) => [
               <span className="text-xs text-gray-600" key={`date-${sub.id}`}>{sub.date || '—'}</span>,
               <span className="font-mono text-xs font-bold text-gray-800" key={`ref-${sub.id}`}>{sub.reference_id}</span>,
               <span className="font-semibold text-gray-800" key={`name-${sub.id}`}>{sub.student_name}</span>,
-              <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded" key={`course-${sub.id}`}>{sub.course_opted}</span>,
+              <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded" key={`course-${sub.id}`}>{sub.course_opted}</span>,
+              <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded" key={`mode-${sub.id}`}>{sub.payment_mode || '—'}</span>,
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded" key={`channel-${sub.id}`}>{sub.revenue_channel || '—'}</span>,
               <span className="font-bold text-gray-800" key={`fees-${sub.id}`}>{formatCurrency(sub.fees_paid)}</span>,
               <span className="text-xs font-semibold text-amber-600" key={`pending-${sub.id}`}>{sub.pending_amount ? formatCurrency(sub.pending_amount) : '—'}</span>,
               <span className="text-xs text-gray-400" key={`at-${sub.id}`}>{new Date(sub.created_at).toLocaleDateString()}</span>

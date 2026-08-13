@@ -13,7 +13,14 @@ const seedAdmin = async () => {
       });
       console.log('Default admin account seeded: admin@jenovate.com / Admin@123');
     } else {
-      console.log('Admin account already exists, skipping admin seed.');
+      const isValid = await adminExists.validatePassword('Admin@123');
+      if (!isValid) {
+        adminExists.password = 'Admin@123';
+        await adminExists.save();
+        console.log('Admin password reset to default: Admin@123');
+      } else {
+        console.log('Admin account exists and password is valid.');
+      }
     }
 
     // 2. Seed Demo Employee
@@ -27,7 +34,14 @@ const seedAdmin = async () => {
       });
       console.log('Demo employee account seeded: employee@jenovate.com / Employee@123');
     } else {
-      console.log('Demo employee account already exists, skipping employee seed.');
+      const isValid = await empExists.validatePassword('Employee@123');
+      if (!isValid) {
+        empExists.password = 'Employee@123';
+        await empExists.save();
+        console.log('Demo employee password reset to default: Employee@123');
+      } else {
+        console.log('Demo employee account exists and password is valid.');
+      }
     }
   } catch (error) {
     console.error('Error seeding users:', error);
