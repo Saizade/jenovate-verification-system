@@ -30,8 +30,8 @@ router.get('/students/pdf', async (req, res, next) => {
     }
     if (course) {
       whereClause[Op.or] = [
-        { course_name: { [Op.like]: `%${course}%` } },
-        { course_opted: { [Op.like]: `%${course}%` } }
+        { course_opted: { [Op.like]: `%${course}%` } },
+        { primary_course: { [Op.like]: `%${course}%` } }
       ];
     }
     if (state) {
@@ -91,8 +91,8 @@ router.get('/students/excel', async (req, res, next) => {
     }
     if (course) {
       whereClause[Op.or] = [
-        { course_name: { [Op.like]: `%${course}%` } },
-        { course_opted: { [Op.like]: `%${course}%` } }
+        { course_opted: { [Op.like]: `%${course}%` } },
+        { primary_course: { [Op.like]: `%${course}%` } }
       ];
     }
     if (state) {

@@ -218,8 +218,8 @@ router.get(
 
       if (course) {
         where[Op.or] = [
-          { course_name: { [Op.like]: `%${course}%` } },
-          { course_opted: { [Op.like]: `%${course}%` } }
+          { course_opted: { [Op.like]: `%${course}%` } },
+          { primary_course: { [Op.like]: `%${course}%` } }
         ];
       }
 
