@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "db:reset": "node -e \"const fs=require('fs'); if(fs.existsSync('./database.sqlite')){fs.unlinkSync('./database.sqlite'); console.log('Database file deleted. Restart server (npm run dev) to create fresh seeded database.');} else {console.log('No database file found.');}\""
   },
   "dependencies": {
     "express": "^4.18.2",
