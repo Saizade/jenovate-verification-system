@@ -8,6 +8,7 @@ import Card from '../components/ui/Card';
 import Table from '../components/ui/Table';
 import Skeleton from '../components/ui/Skeleton';
 import StatsCard from '../components/ui/StatsCard';
+import CourseSearchableSelect from '../components/forms/CourseSearchableSelect';
 
 import {
   HiDocumentPlus, HiClipboardDocumentList, HiBookOpen, HiHashtag, HiCreditCard, HiTag
@@ -47,6 +48,9 @@ export default function EmployeeDashboard() {
   });
 
   const numCoursesSelected = parseInt(watch('numCoursesSelected') || '1', 10);
+  const primaryCourse = watch('primaryCourse') || '';
+  const secondaryCourse = watch('secondaryCourse') || '';
+  const tertiaryCourse = watch('tertiaryCourse') || '';
   const watchProgramPrice = watch('programPrice');
   const watchFeesPaid = watch('feesPaid');
 
@@ -297,50 +301,47 @@ export default function EmployeeDashboard() {
 
               {/* Course 1 */}
               <div>
-                <label htmlFor="emp-primary-course" className="block text-[11px] font-semibold text-gray-600 mb-1">
-                  Course 1 Name <span className="text-red-500">*</span>
-                </label>
-                <input
+                <CourseSearchableSelect
                   id="emp-primary-course"
-                  type="text"
-                  placeholder="e.g. Java Full Stack"
-                  className={`form-input bg-white text-sm ${errors.primaryCourse ? 'border-red-300' : ''}`}
-                  {...register('primaryCourse', { required: 'Course 1 is required' })}
+                  label="Course 1 Name"
+                  required
+                  value={primaryCourse}
+                  onChange={(val) => setValue('primaryCourse', val, { shouldValidate: true })}
+                  error={errors.primaryCourse?.message}
+                  placeholder="Search or select Course 1..."
+                  registerProps={register('primaryCourse', { required: 'Course 1 is required' })}
                 />
-                {errors.primaryCourse && <p className="form-error text-xs mt-1 text-red-500">{errors.primaryCourse.message}</p>}
               </div>
 
               {/* Course 2 (Pops up if numCoursesSelected >= 2) */}
               {numCoursesSelected >= 2 && (
                 <div className="animate-fade-in">
-                  <label htmlFor="emp-secondary-course" className="block text-[11px] font-semibold text-gray-600 mb-1">
-                    Course 2 Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
+                  <CourseSearchableSelect
                     id="emp-secondary-course"
-                    type="text"
-                    placeholder="e.g. Python Full Stack"
-                    className={`form-input bg-white text-sm ${errors.secondaryCourse ? 'border-red-300' : ''}`}
-                    {...register('secondaryCourse', { required: numCoursesSelected >= 2 ? 'Course 2 is required' : false })}
+                    label="Course 2 Name"
+                    required
+                    value={secondaryCourse}
+                    onChange={(val) => setValue('secondaryCourse', val, { shouldValidate: true })}
+                    error={errors.secondaryCourse?.message}
+                    placeholder="Search or select Course 2..."
+                    registerProps={register('secondaryCourse', { required: numCoursesSelected >= 2 ? 'Course 2 is required' : false })}
                   />
-                  {errors.secondaryCourse && <p className="form-error text-xs mt-1 text-red-500">{errors.secondaryCourse.message}</p>}
                 </div>
               )}
 
               {/* Course 3 (Pops up if numCoursesSelected >= 3) */}
               {numCoursesSelected >= 3 && (
                 <div className="animate-fade-in">
-                  <label htmlFor="emp-tertiary-course" className="block text-[11px] font-semibold text-gray-600 mb-1">
-                    Course 3 Name <span className="text-red-500">*</span>
-                  </label>
-                  <input
+                  <CourseSearchableSelect
                     id="emp-tertiary-course"
-                    type="text"
-                    placeholder="e.g. Data Science"
-                    className={`form-input bg-white text-sm ${errors.tertiaryCourse ? 'border-red-300' : ''}`}
-                    {...register('tertiaryCourse', { required: numCoursesSelected >= 3 ? 'Course 3 is required' : false })}
+                    label="Course 3 Name"
+                    required
+                    value={tertiaryCourse}
+                    onChange={(val) => setValue('tertiaryCourse', val, { shouldValidate: true })}
+                    error={errors.tertiaryCourse?.message}
+                    placeholder="Search or select Course 3..."
+                    registerProps={register('tertiaryCourse', { required: numCoursesSelected >= 3 ? 'Course 3 is required' : false })}
                   />
-                  {errors.tertiaryCourse && <p className="form-error text-xs mt-1 text-red-500">{errors.tertiaryCourse.message}</p>}
                 </div>
               )}
             </div>

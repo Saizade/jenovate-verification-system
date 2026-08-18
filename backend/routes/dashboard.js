@@ -284,7 +284,33 @@ router.get('/accuracy', async (req, res, next) => {
   }
 });
 
-// ─── 6. GET /api/dashboard/fraud-analytics ───────────────────────────
+// ─── 6. GET /api/dashboard/match-distribution ─────────────────────────
+router.get('/match-distribution', async (req, res, next) => {
+  try {
+    const [matches, mismatches, pendingVerification] = await Promise.all([
+      VerificationResult.count({ where: { match_status: 'MATCH' } }),
+      VerificationResult.count({ where: { match_status: 'MISMATCH' } }),
+      VerificationResult.count({ where: { match_status: 'PENDING' } })
+    ]);
+
+    const totalSubmissions = await EmployeeSubmission.count();
+    const pending = pendingVerification > 0 ? pendingVerification : Math.max(0, totalSubmissions - (matches + mismatches));
+
+    return res.json({
+      success: true,
+      message: 'Match distribution retrieved successfully',
+      data: {
+        matches,
+        mismatches,
+        pending
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// ─── 7. GET /api/dashboard/fraud-analytics ───────────────────────────
 router.get('/fraud-analytics', async (req, res, next) => {
   try {
     const [safe, review, highRisk] = await Promise.all([
@@ -314,7 +340,14 @@ router.get('/fraud-analytics', async (req, res, next) => {
       success: true,
       message: 'Fraud analytics retrieved successfully',
       data: {
-        distribution: { safe, review, highRisk },
+        distribution: {
+          safe,
+          review,
+          highRisk,
+          SAFE: safe,
+          REVIEW_REQUIRED: review,
+          HIGH_RISK: highRisk
+        },
         monthly: monthly.map((m) => ({
           month: m.month,
           count: parseInt(m.count, 10)
