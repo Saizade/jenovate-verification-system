@@ -4,9 +4,12 @@ const { body, query, validationResult } = require('express-validator');
 const { Student, VerificationResult, Employee, Notification } = require('../models');
 const auth = require('../middleware/auth');
 const roleCheck = require('../middleware/roleCheck');
-const { uploadMultiple } = require('../middleware/upload');
+const { uploadMultiple, uploadExcelSingle } = require('../middleware/upload');
 const { generateReferenceId } = require('../services/referenceId');
 const { Op } = require('sequelize');
+const ExcelJS = require('exceljs');
+const fs = require('fs');
+
 
 // 1. POST /api/students - Submit student form (Public)
 router.post(
@@ -318,4 +321,276 @@ router.get(
   }
 );
 
+// POST /api/students/import-excel - Admin only. Import students from Excel sheet
+router.post(
+  '/import-excel',
+  roleCheck(['admin']),
+  (req, res, next) => {
+    uploadExcelSingle(req, res, (err) => {
+      if (err) {
+        return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
+      }
+      next();
+    });
+  },
+  async (req, res, next) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: 'No file uploaded. Please select an Excel (.xlsx, .xls) or CSV (.csv) file.'
+        });
+      }
+
+      const filePath = req.file.path;
+      const workbook = new ExcelJS.Workbook();
+
+      if (req.file.originalname.toLowerCase().endsWith('.csv')) {
+        await workbook.csv.readFile(filePath);
+      } else {
+        await workbook.xlsx.readFile(filePath);
+      }
+
+      const worksheet = workbook.worksheets[0];
+      if (!worksheet || worksheet.rowCount < 2) {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        return res.status(400).json({
+          success: false,
+          message: 'The uploaded file is empty or contains no data rows.'
+        });
+      }
+
+      // Map column headers from Row 1
+      const headerRow = worksheet.getRow(1);
+      const colMap = {};
+      
+      headerRow.eachCell({ includeEmpty: false }, (cell, colNumber) => {
+        let val = String(cell.value || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+        colMap[colNumber] = val;
+      });
+
+      const getCellValue = (row, fieldKeys) => {
+        for (const [colNum, colName] of Object.entries(colMap)) {
+          if (fieldKeys.some(fk => colName.includes(fk))) {
+            const cell = row.getCell(parseInt(colNum));
+            if (!cell || cell.value === null || cell.value === undefined) continue;
+            let val = cell.value;
+            if (typeof val === 'object') {
+              if (val.result !== undefined) val = val.result;
+              else if (val.text !== undefined) val = val.text;
+              else if (val.richText) val = val.richText.map(r => r.text).join('');
+            }
+            return String(val).trim();
+          }
+        }
+        return null;
+      };
+
+      const createdStudents = [];
+      const errors = [];
+
+      for (let i = 2; i <= worksheet.rowCount; i++) {
+        const row = worksheet.getRow(i);
+        
+        // Extract basic identifier fields to verify non-empty row
+        const fullName = getCellValue(row, ['fullname', 'studentname', 'name']) || '';
+        const phoneNo = getCellValue(row, ['phoneno', 'phone', 'mobile', 'whatsappnumber', 'whatsapp']) || '';
+        const email = getCellValue(row, ['email', 'emailid', 'mail']) || '';
+        const collegeName = getCellValue(row, ['collegename', 'college', 'institution']) || '';
+
+        // Skip blank rows
+        if (!fullName && !phoneNo && !email && !collegeName) {
+          continue;
+        }
+
+        const sNo = getCellValue(row, ['sno', 'serialno', 'sn']) || null;
+        const remarks = getCellValue(row, ['remarks', 'statusremarks']) || null;
+        const dateVal = getCellValue(row, ['date', 'joiningdate', 'registrationdate']) || new Date().toISOString().split('T')[0];
+        const academicRemarks = getCellValue(row, ['academicremarks', 'academic']) || null;
+        const counselorName = getCellValue(row, ['counselorname', 'counselor']) || null;
+        const whatsappNumber = getCellValue(row, ['whatsappnumber', 'whatsapp']) || phoneNo || null;
+        const state = getCellValue(row, ['state', 'region', 'location']) || null;
+        const department = getCellValue(row, ['department', 'dept', 'branch']) || null;
+        const courseOpted = getCellValue(row, ['courseopted', 'course', 'coursename']) || null;
+        const primaryCourse = getCellValue(row, ['primarycourse']) || courseOpted || null;
+        const secondaryCourse = getCellValue(row, ['secondarycourse']) || null;
+        const tertiaryCourse = getCellValue(row, ['tertiarycourse']) || null;
+        const typeOfPack = getCellValue(row, ['typeofpack', 'packtype', 'pack']) || 'Single Course';
+        const monthOpted = getCellValue(row, ['monthopted', 'month']) || null;
+        const typeOfCourse = getCellValue(row, ['typeofcourse', 'coursetype']) || null;
+        const paymentMode = getCellValue(row, ['paymentmode', 'paymode', 'mode']) || null;
+        
+        const rawProgPrice = getCellValue(row, ['programprice', 'price', 'totalfees', 'fee']);
+        const rawAmtRec = getCellValue(row, ['amountreceived', 'received', 'feespaid', 'paid']);
+        const rawPending = getCellValue(row, ['pendingamount', 'pending', 'dues']);
+
+        const programPrice = parseFloat(rawProgPrice) || 0;
+        const amountReceived = parseFloat(rawAmtRec) || 0;
+        let pendingAmount = parseFloat(rawPending);
+        if (isNaN(pendingAmount)) {
+          pendingAmount = Math.max(0, programPrice - amountReceived);
+        }
+
+        const revenueChannel = getCellValue(row, ['revenuechannel', 'channel', 'source']) || null;
+
+        let refId = getCellValue(row, ['referenceid', 'refid', 'reference']) || null;
+        if (!refId || !refId.startsWith('JNV-')) {
+          refId = await generateReferenceId();
+        }
+
+        try {
+          const student = await Student.create({
+            reference_id: refId,
+            s_no: sNo,
+            remarks,
+            date: dateVal,
+            academic_remarks: academicRemarks,
+            counselor_name: counselorName,
+            full_name: fullName || 'Unnamed Student',
+            phone_no: phoneNo || null,
+            whatsapp_number: whatsappNumber,
+            email: email || null,
+            college_name: collegeName || null,
+            state,
+            department,
+            course_opted: courseOpted,
+            primary_course: primaryCourse,
+            secondary_course: secondaryCourse,
+            tertiary_course: tertiaryCourse,
+            type_of_pack: typeOfPack,
+            month_opted: monthOpted,
+            type_of_course: typeOfCourse,
+            payment_mode: paymentMode,
+            program_price: programPrice,
+            amount_received: amountReceived,
+            pending_amount: pendingAmount,
+            revenue_channel: revenueChannel,
+            documents: {},
+            is_locked: true,
+            submitted_by: req.user.id
+          });
+
+          createdStudents.push(student);
+        } catch (err) {
+          console.error(`Row ${i} import error:`, err);
+          errors.push(`Row ${i}: ${err.message}`);
+        }
+      }
+
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+
+      if (createdStudents.length > 0) {
+        await Notification.create({
+          type: 'new_student',
+          title: 'Excel Bulk Student Import',
+          message: `Successfully imported ${createdStudents.length} student records via Excel upload by ${req.user.name}.`,
+          reference_id: createdStudents[0].reference_id,
+          is_read: false,
+          user_id: null
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: `Successfully imported ${createdStudents.length} student record(s) directly from Excel sheet.`,
+        data: {
+          importedCount: createdStudents.length,
+          errors
+        }
+      });
+    } catch (error) {
+      if (req.file && fs.existsSync(req.file.path)) {
+        fs.unlinkSync(req.file.path);
+      }
+      next(error);
+    }
+  }
+);
+
+// GET /api/students/sample-excel - Admin only. Download sample Excel template
+router.get(
+  '/sample-excel',
+  roleCheck(['admin']),
+  async (req, res, next) => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Student Import Template');
+
+      sheet.columns = [
+        { header: 'S.no', key: 's_no', width: 10 },
+        { header: 'Counselor Name', key: 'counselor_name', width: 20 },
+        { header: 'Student Name', key: 'full_name', width: 25 },
+        { header: 'Phone No.', key: 'phone_no', width: 16 },
+        { header: 'WhatsApp Number', key: 'whatsapp_number', width: 18 },
+        { header: 'E-mail', key: 'email', width: 28 },
+        { header: 'College Name', key: 'college_name', width: 30 },
+        { header: 'State', key: 'state', width: 16 },
+        { header: 'Department', key: 'department', width: 18 },
+        { header: 'Course Opted', key: 'course_opted', width: 25 },
+        { header: 'Primary Course', key: 'primary_course', width: 22 },
+        { header: 'Secondary Course', key: 'secondary_course', width: 20 },
+        { header: 'Tertiary Course', key: 'tertiary_course', width: 20 },
+        { header: 'Type of Pack', key: 'type_of_pack', width: 16 },
+        { header: 'Month Opted', key: 'month_opted', width: 14 },
+        { header: 'Type of Course', key: 'type_of_course', width: 25 },
+        { header: 'Payment Mode', key: 'payment_mode', width: 16 },
+        { header: 'Program Price', key: 'program_price', width: 15 },
+        { header: 'Amount Received', key: 'amount_received', width: 16 },
+        { header: 'Pending Amount', key: 'pending_amount', width: 16 },
+        { header: 'Revenue Channel', key: 'revenue_channel', width: 20 },
+        { header: 'Remarks', key: 'remarks', width: 20 },
+        { header: 'Academic Remarks', key: 'academic_remarks', width: 22 }
+      ];
+
+      const headerRow = sheet.getRow(1);
+      headerRow.eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF4F46E5' }
+        };
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+
+      sheet.addRow({
+        s_no: 1,
+        counselor_name: 'Rahul Sharma',
+        full_name: 'Aarav Patel',
+        phone_no: '9876543210',
+        whatsapp_number: '9876543210',
+        email: 'aarav.patel@example.com',
+        college_name: 'IIT Bombay',
+        state: 'Maharashtra',
+        department: 'Computer Science',
+        course_opted: 'Java Full Stack',
+        primary_course: 'Java',
+        secondary_course: 'React',
+        tertiary_course: '',
+        type_of_pack: 'Dual Course',
+        month_opted: 'August 2026',
+        type_of_course: 'Full Stack Web Development',
+        payment_mode: 'UPI',
+        program_price: 15000,
+        amount_received: 10000,
+        pending_amount: 5000,
+        revenue_channel: 'Online Campaign',
+        remarks: 'Batch A',
+        academic_remarks: 'Good background'
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', 'attachment; filename=students-import-sample-template.xlsx');
+      return res.send(buffer);
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 module.exports = router;
+

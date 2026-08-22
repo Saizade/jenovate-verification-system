@@ -12,9 +12,9 @@ import LoginPage from './pages/LoginPage';
 import StudentRegistration from './pages/StudentRegistration';
 import AdminDashboard from './pages/AdminDashboard';
 import StudentsListPage from './pages/StudentsListPage';
+import DataPage from './pages/DataPage';
 import BatchesPage from './pages/BatchesPage';
 import EmployeeSubmissionsPage from './pages/EmployeeSubmissionsPage';
-import VerificationResultsPage from './pages/VerificationResultsPage';
 import FraudReportsPage from './pages/FraudReportsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import ManageEmployeesPage from './pages/ManageEmployeesPage';
@@ -79,9 +79,9 @@ function App() {
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="students" element={<StudentsListPage />} />
+              <Route path="data" element={<DataPage />} />
               <Route path="batches" element={<BatchesPage />} />
               <Route path="submissions" element={<EmployeeSubmissionsPage />} />
-              <Route path="verification" element={<VerificationResultsPage />} />
               <Route path="fraud-reports" element={<FraudReportsPage />} />
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="employees" element={<ManageEmployeesPage />} />

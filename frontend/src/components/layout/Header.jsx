@@ -17,8 +17,8 @@ import Badge from '../ui/Badge';
 const pageTitles = {
   '/admin/dashboard': 'Dashboard',
   '/admin/students': 'Students',
+  '/admin/data': 'Data',
   '/admin/submissions': 'Employee Entries',
-  '/admin/verification': 'Verification',
   '/admin/fraud-reports': 'Fraud Reports',
   '/admin/analytics': 'Analytics',
   '/admin/employees': 'Manage Employees',

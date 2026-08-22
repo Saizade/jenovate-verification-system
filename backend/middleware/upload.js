@@ -44,12 +44,34 @@ const upload = multer({
   }
 });
 
+// Excel file filter
+const excelFileFilter = (req, file, cb) => {
+  const allowedExts = ['.xlsx', '.xls', '.csv'];
+  const ext = path.extname(file.originalname).toLowerCase();
+  
+  if (allowedExts.includes(ext)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Invalid file type. Only Excel (.xlsx, .xls) and CSV (.csv) files are allowed.'), false);
+  }
+};
+
+const excelUpload = multer({
+  storage,
+  fileFilter: excelFileFilter,
+  limits: {
+    fileSize: 15 * 1024 * 1024 // 15MB max for excel sheets
+  }
+});
+
 // Export middleware for single and multiple file uploads
 const uploadSingle = upload.single('file');
+const uploadExcelSingle = excelUpload.single('file');
 const uploadMultiple = upload.fields([
   { name: 'aadhaarDoc', maxCount: 1 },
   { name: 'photoDoc', maxCount: 1 },
   { name: 'receiptDoc', maxCount: 1 }
 ]);
 
-module.exports = { uploadSingle, uploadMultiple };
+module.exports = { uploadSingle, uploadExcelSingle, uploadMultiple };
+
