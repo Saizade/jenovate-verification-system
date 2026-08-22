@@ -97,8 +97,14 @@ export default function DataPage() {
         setTotalPages(res.data.data.totalPages || 1);
         
         // Calculate stats
+        const getStudentReceivedAmount = (st) => {
+          if (!st) return 0;
+          const rcv = st.amount_received ?? st.amountReceived ?? st.payment_amount;
+          return parseFloat(rcv) || 0;
+        };
+
         const pendingSum = fetched.reduce((acc, curr) => acc + (parseFloat(curr.pending_amount) || 0), 0);
-        const receivedSum = fetched.reduce((acc, curr) => acc + (parseFloat(curr.amount_received || curr.payment_amount) || 0), 0);
+        const receivedSum = fetched.reduce((acc, curr) => acc + getStudentReceivedAmount(curr), 0);
         setFilteredSummary({
           totalCount: res.data.data.total || fetched.length,
           totalPending: pendingSum,
@@ -510,7 +516,7 @@ export default function DataPage() {
                   <span className="text-xs font-medium text-gray-600 truncate max-w-[120px] block" title={st.college_name} key={`col-${st.id}`}>{st.college_name || '—'}</span>,
                   <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" key={`dept-${st.id}`}>{st.department || '—'}</span>,
                   <span className="text-xs font-semibold text-primary-950 bg-primary-50 px-2 py-0.5 rounded" key={`crs-${st.id}`}>{st.course_opted || st.course_name || '—'}</span>,
-                  <span className="font-bold text-emerald-600" key={`rcv-${st.id}`}>{formatCurrency(st.amount_received || st.payment_amount)}</span>,
+                  <span className="font-bold text-emerald-600" key={`rcv-${st.id}`}>{formatCurrency(st.amount_received ?? st.payment_amount ?? st.amountReceived ?? 0)}</span>,
                   <span className={`font-bold ${isPending ? 'text-amber-600' : 'text-gray-400'}`} key={`pnd-${st.id}`}>
                     {formatCurrency(st.pending_amount)}
                   </span>,

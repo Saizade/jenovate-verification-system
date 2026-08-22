@@ -369,21 +369,68 @@ router.post(
         colMap[colNumber] = val;
       });
 
-      const getCellValue = (row, fieldKeys) => {
-        for (const [colNum, colName] of Object.entries(colMap)) {
-          if (fieldKeys.some(fk => colName.includes(fk))) {
-            const cell = row.getCell(parseInt(colNum));
-            if (!cell || cell.value === null || cell.value === undefined) continue;
-            let val = cell.value;
-            if (typeof val === 'object') {
-              if (val.result !== undefined) val = val.result;
-              else if (val.text !== undefined) val = val.text;
-              else if (val.richText) val = val.richText.map(r => r.text).join('');
-            }
-            return String(val).trim();
+      const FIELD_ALIASES = {
+        sNo: ['sno', 'serialno', 'sn', 'snumber'],
+        remarks: ['remarks', 'statusremarks', 'remark'],
+        dateVal: ['date', 'joiningdate', 'registrationdate', 'createdat'],
+        academicRemarks: ['academicremarks', 'academicremark', 'academic'],
+        counselorName: ['counselorname', 'counselor'],
+        fullName: ['fullname', 'studentname', 'name', 'student'],
+        phoneNo: ['phoneno', 'phone', 'mobile', 'phonenumber', 'contact', 'contactno'],
+        whatsappNumber: ['whatsappnumber', 'whatsapp', 'whatsappno'],
+        email: ['email', 'emailid', 'mail'],
+        collegeName: ['collegename', 'college', 'institution', 'university'],
+        state: ['state', 'region', 'location'],
+        department: ['department', 'dept', 'branch'],
+        courseOpted: ['courseopted', 'course', 'coursename', 'courses'],
+        primaryCourse: ['primarycourse'],
+        secondaryCourse: ['secondarycourse'],
+        tertiaryCourse: ['tertiarycourse'],
+        typeOfPack: ['typeofpack', 'packtype', 'pack'],
+        monthOpted: ['monthopted', 'month'],
+        typeOfCourse: ['typeofcourse', 'coursetype'],
+        paymentMode: ['paymentmode', 'paymode', 'modeofpayment', 'mode'],
+        programPrice: ['programprice', 'totalprice', 'totalfees', 'programfee', 'price'],
+        amountReceived: ['amountreceived', 'receivedamount', 'received', 'feespaid', 'amountpaid', 'paidamount'],
+        pendingAmount: ['pendingamount', 'pending', 'dues', 'balance', 'pendingdues'],
+        revenueChannel: ['revenuechannel', 'channel', 'source'],
+        refId: ['referenceid', 'refid', 'reference']
+      };
+
+      const getColNumForField = (aliases) => {
+        for (const alias of aliases) {
+          for (const [colNum, colName] of Object.entries(colMap)) {
+            if (colName === alias) return parseInt(colNum);
+          }
+        }
+        for (const alias of aliases) {
+          if (alias.length < 4) continue;
+          for (const [colNum, colName] of Object.entries(colMap)) {
+            if (colName.includes(alias)) return parseInt(colNum);
           }
         }
         return null;
+      };
+
+      const getValByField = (row, aliases) => {
+        const colNum = getColNumForField(aliases);
+        if (!colNum) return null;
+        const cell = row.getCell(colNum);
+        if (!cell || cell.value === null || cell.value === undefined) return null;
+        let val = cell.value;
+        if (typeof val === 'object') {
+          if (val.result !== undefined) val = val.result;
+          else if (val.text !== undefined) val = val.text;
+          else if (val.richText) val = val.richText.map(r => r.text).join('');
+        }
+        return String(val).trim();
+      };
+
+      const parseMoney = (val) => {
+        if (!val) return 0;
+        const cleaned = String(val).replace(/[^0-9.]/g, '');
+        const num = parseFloat(cleaned);
+        return isNaN(num) ? 0 : num;
       };
 
       const createdStudents = [];
@@ -393,47 +440,44 @@ router.post(
         const row = worksheet.getRow(i);
         
         // Extract basic identifier fields to verify non-empty row
-        const fullName = getCellValue(row, ['fullname', 'studentname', 'name']) || '';
-        const phoneNo = getCellValue(row, ['phoneno', 'phone', 'mobile', 'whatsappnumber', 'whatsapp']) || '';
-        const email = getCellValue(row, ['email', 'emailid', 'mail']) || '';
-        const collegeName = getCellValue(row, ['collegename', 'college', 'institution']) || '';
+        const fullName = getValByField(row, FIELD_ALIASES.fullName) || '';
+        const phoneNo = getValByField(row, FIELD_ALIASES.phoneNo) || '';
+        const email = getValByField(row, FIELD_ALIASES.email) || '';
+        const collegeName = getValByField(row, FIELD_ALIASES.collegeName) || '';
 
         // Skip blank rows
         if (!fullName && !phoneNo && !email && !collegeName) {
           continue;
         }
 
-        const sNo = getCellValue(row, ['sno', 'serialno', 'sn']) || null;
-        const remarks = getCellValue(row, ['remarks', 'statusremarks']) || null;
-        const dateVal = getCellValue(row, ['date', 'joiningdate', 'registrationdate']) || new Date().toISOString().split('T')[0];
-        const academicRemarks = getCellValue(row, ['academicremarks', 'academic']) || null;
-        const counselorName = getCellValue(row, ['counselorname', 'counselor']) || null;
-        const whatsappNumber = getCellValue(row, ['whatsappnumber', 'whatsapp']) || phoneNo || null;
-        const state = getCellValue(row, ['state', 'region', 'location']) || null;
-        const department = getCellValue(row, ['department', 'dept', 'branch']) || null;
-        const courseOpted = getCellValue(row, ['courseopted', 'course', 'coursename']) || null;
-        const primaryCourse = getCellValue(row, ['primarycourse']) || courseOpted || null;
-        const secondaryCourse = getCellValue(row, ['secondarycourse']) || null;
-        const tertiaryCourse = getCellValue(row, ['tertiarycourse']) || null;
-        const typeOfPack = getCellValue(row, ['typeofpack', 'packtype', 'pack']) || 'Single Course';
-        const monthOpted = getCellValue(row, ['monthopted', 'month']) || null;
-        const typeOfCourse = getCellValue(row, ['typeofcourse', 'coursetype']) || null;
-        const paymentMode = getCellValue(row, ['paymentmode', 'paymode', 'mode']) || null;
+        const sNo = getValByField(row, FIELD_ALIASES.sNo) || null;
+        const remarks = getValByField(row, FIELD_ALIASES.remarks) || null;
+        const dateVal = getValByField(row, FIELD_ALIASES.dateVal) || new Date().toISOString().split('T')[0];
+        const academicRemarks = getValByField(row, FIELD_ALIASES.academicRemarks) || null;
+        const counselorName = getValByField(row, FIELD_ALIASES.counselorName) || null;
+        const whatsappNumber = getValByField(row, FIELD_ALIASES.whatsappNumber) || phoneNo || null;
+        const state = getValByField(row, FIELD_ALIASES.state) || null;
+        const department = getValByField(row, FIELD_ALIASES.department) || null;
+        const courseOpted = getValByField(row, FIELD_ALIASES.courseOpted) || null;
+        const primaryCourse = getValByField(row, FIELD_ALIASES.primaryCourse) || courseOpted || null;
+        const secondaryCourse = getValByField(row, FIELD_ALIASES.secondaryCourse) || null;
+        const tertiaryCourse = getValByField(row, FIELD_ALIASES.tertiaryCourse) || null;
+        const typeOfPack = getValByField(row, FIELD_ALIASES.typeOfPack) || 'Single Course';
+        const monthOpted = getValByField(row, FIELD_ALIASES.monthOpted) || null;
+        const typeOfCourse = getValByField(row, FIELD_ALIASES.typeOfCourse) || null;
+        const paymentMode = getValByField(row, FIELD_ALIASES.paymentMode) || null;
         
-        const rawProgPrice = getCellValue(row, ['programprice', 'price', 'totalfees', 'fee']);
-        const rawAmtRec = getCellValue(row, ['amountreceived', 'received', 'feespaid', 'paid']);
-        const rawPending = getCellValue(row, ['pendingamount', 'pending', 'dues']);
+        const rawProgPrice = getValByField(row, FIELD_ALIASES.programPrice);
+        const rawAmtRec = getValByField(row, FIELD_ALIASES.amountReceived);
+        const rawPending = getValByField(row, FIELD_ALIASES.pendingAmount);
 
-        const programPrice = parseFloat(rawProgPrice) || 0;
-        const amountReceived = parseFloat(rawAmtRec) || 0;
-        let pendingAmount = parseFloat(rawPending);
-        if (isNaN(pendingAmount)) {
-          pendingAmount = Math.max(0, programPrice - amountReceived);
-        }
+        const programPrice = parseMoney(rawProgPrice);
+        const amountReceived = parseMoney(rawAmtRec);
+        let pendingAmount = rawPending ? parseMoney(rawPending) : Math.max(0, programPrice - amountReceived);
 
-        const revenueChannel = getCellValue(row, ['revenuechannel', 'channel', 'source']) || null;
+        const revenueChannel = getValByField(row, FIELD_ALIASES.revenueChannel) || null;
 
-        let refId = getCellValue(row, ['referenceid', 'refid', 'reference']) || null;
+        let refId = getValByField(row, FIELD_ALIASES.refId) || null;
         if (!refId || !refId.startsWith('JNV-')) {
           refId = await generateReferenceId();
         }
