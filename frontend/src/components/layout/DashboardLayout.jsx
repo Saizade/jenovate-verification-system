@@ -40,7 +40,7 @@ export default function DashboardLayout() {
   const toggleMobile = () => setIsMobileOpen((prev) => !prev);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-surface-50">
       {/* Sidebar */}
       <Sidebar
         isCollapsed={isCollapsed}
@@ -65,14 +65,14 @@ export default function DashboardLayout() {
         <Header onMenuClick={toggleMobile} />
 
         {/* Page Content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 bg-white">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
         </main>
 
         {/* Footer */}
-        <footer className="flex-shrink-0 px-6 py-4 border-t border-slate-200 bg-slate-50/80">
+        <footer className="flex-shrink-0 px-6 py-4 border-t border-surface-200 bg-white/50">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
             <p>&copy; {new Date().getFullYear()} Jenovate Verification System. All rights reserved.</p>
             <p>v1.0.0</p>

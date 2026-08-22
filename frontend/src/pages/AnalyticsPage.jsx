@@ -12,9 +12,9 @@ import {
 
 import { HiArrowTrendingUp, HiAcademicCap, HiCalendar } from 'react-icons/hi2';
 
-const CHART_COLORS = ['#2c6177', '#438ca9', '#607c91', '#3b806b', '#8a6840', '#ad5962'];
-const MATCH_COLORS = ['#3b806b', '#ad5962', '#8a6840'];
-const FRAUD_COLORS = ['#3b806b', '#8a6840', '#ad5962'];
+const CHART_COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#ef4444'];
+const MATCH_COLORS = ['#10b981', '#dc2626', '#f59e0b'];
+const FRAUD_COLORS = ['#10b981', '#f59e0b', '#ef4444'];
 
 export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
@@ -120,15 +120,15 @@ export default function AnalyticsPage() {
               <AreaChart data={enrollments} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorEnrollMain" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#438ca9" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#438ca9" stopOpacity={0}/>
+                    <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.2}/>
+                    <stop offset="95%" stopColor="#4f46e5" stopOpacity={0}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="month" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                 <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip />
-                <Area type="monotone" dataKey="count" name="Registrations" stroke="#438ca9" strokeWidth={2.5} fillOpacity={1} fill="url(#colorEnrollMain)" />
+                <Area type="monotone" dataKey="count" name="Registrations" stroke="#4f46e5" strokeWidth={2.5} fillOpacity={1} fill="url(#colorEnrollMain)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>

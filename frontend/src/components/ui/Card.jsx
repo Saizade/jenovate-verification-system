@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
 
 const variantStyles = {
-  default: 'bg-white border border-slate-200 shadow-card',
-  glass: 'bg-white/95 backdrop-blur-xl border border-sky-100 shadow-card',
-  bordered: 'bg-white border border-primary-200',
+  default: 'bg-white border border-surface-200 shadow-sm',
+  glass: 'bg-white/70 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]',
+  bordered: 'bg-white border-2 border-primary-100',
 };
 
 const paddingStyles = {
@@ -28,12 +28,12 @@ const Card = forwardRef(({
       ref={ref}
       className={`rounded-2xl overflow-hidden transition-all duration-300 ease-out
         ${variantStyles[variant]}
-        ${hover ? 'hover:-translate-y-0.5 hover:shadow-card-hover cursor-pointer' : ''}
+        ${hover ? 'hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] cursor-pointer' : ''}
         ${className}`}
       {...props}
     >
       {header && (
-        <div className="px-6 py-4 border-b border-slate-100">
+        <div className="px-6 py-4 border-b border-surface-100">
           {typeof header === 'string' ? (
             <h3 className="text-base font-semibold text-primary-950">{header}</h3>
           ) : (
@@ -45,7 +45,7 @@ const Card = forwardRef(({
         {children}
       </div>
       {footer && (
-        <div className="px-6 py-4 border-t border-slate-100 bg-slate-50/70">
+        <div className="px-6 py-4 border-t border-surface-100 bg-surface-50/50">
           {footer}
         </div>
       )}

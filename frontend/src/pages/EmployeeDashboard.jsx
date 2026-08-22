@@ -440,7 +440,7 @@ export default function EmployeeDashboard() {
               type="submit"
               variant="primary"
               loading={submitting}
-              className="w-full flex items-center justify-center gap-2 mt-4 bg-primary-700 hover:bg-primary-600"
+              className="w-full flex items-center justify-center gap-2 mt-4 bg-gradient-to-r from-primary-950 to-primary-800 hover:from-primary-900"
             >
               <HiDocumentPlus className="w-5 h-5" />
               Submit Details

@@ -61,18 +61,18 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-white">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 via-primary-950 to-indigo-950">
       {/* Decorative blurred circles */}
-      <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-primary-100/50 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[600px] h-[600px] rounded-full bg-primary-100/40 blur-[140px] pointer-events-none" />
-      <div className="absolute top-[40%] right-[20%] w-[300px] h-[300px] rounded-full bg-primary-50/60 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[30%] left-[10%] w-[250px] h-[250px] rounded-full bg-primary-100/30 blur-[80px] pointer-events-none" />
+      <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] rounded-full bg-primary-500/20 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-15%] right-[-10%] w-[600px] h-[600px] rounded-full bg-indigo-500/15 blur-[140px] pointer-events-none" />
+      <div className="absolute top-[40%] right-[20%] w-[300px] h-[300px] rounded-full bg-violet-500/10 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[30%] left-[10%] w-[250px] h-[250px] rounded-full bg-blue-400/10 blur-[80px] pointer-events-none" />
 
       {/* Subtle grid pattern overlay */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(rgba(67,140,169,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(67,140,169,0.06) 1px, transparent 1px)`,
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
           backgroundSize: '60px 60px',
         }}
       />
@@ -85,19 +85,19 @@ export default function LoginPage() {
       >
         {/* Branding */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary-700 shadow-md shadow-primary-900/15 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-500 to-indigo-600 shadow-lg shadow-primary-500/25 mb-4">
             <HiShieldCheck className="w-9 h-9 text-white" />
           </div>
-          <h1 className="text-3xl font-semibold text-primary-950 tracking-tight">JENOVATE</h1>
-          <p className="text-primary-700 text-sm font-medium mt-1 tracking-widest uppercase">
+          <h1 className="text-3xl font-bold text-white tracking-tight">JENOVATE</h1>
+          <p className="text-primary-200/70 text-sm font-medium mt-1 tracking-widest uppercase">
             Verification System
           </p>
         </div>
 
         {/* Glass Card */}
-        <div className="bg-white/95 backdrop-blur-2xl border border-slate-200 rounded-2xl p-8 shadow-elevated">
+        <div className="bg-white/[0.07] backdrop-blur-2xl border border-white/[0.12] rounded-3xl p-8 shadow-2xl shadow-black/20">
           <div className="mb-6">
-            <h2 className="text-xl font-semibold text-primary-950">Welcome back</h2>
+            <h2 className="text-xl font-semibold text-white">Welcome back</h2>
             <p className="text-sm text-gray-400 mt-1">Sign in to your account to continue</p>
           </div>
 
@@ -116,10 +116,10 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   placeholder="you@jenovate.com"
-                  className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-slate-800 placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500 ${
+                  className={`w-full pl-11 pr-4 py-3 bg-white/[0.06] border rounded-xl text-sm text-white placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-400/60 ${
                     errors.email
                       ? 'border-red-400/60 focus:ring-red-500/40 focus:border-red-400/60'
-                      : 'border-slate-200 hover:border-primary-300'
+                      : 'border-white/[0.1] hover:border-white/[0.2]'
                   }`}
                   {...register('email', {
                     required: 'Email is required',
@@ -131,7 +131,7 @@ export default function LoginPage() {
                 />
               </div>
               {errors.email && (
-                <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
                   <span className="inline-block w-1 h-1 rounded-full bg-red-400" />
                   {errors.email.message}
                 </p>
@@ -152,10 +152,10 @@ export default function LoginPage() {
                   type="password"
                   autoComplete="current-password"
                   placeholder="Enter your password"
-                  className={`w-full pl-11 pr-4 py-3 bg-white border rounded-xl text-sm text-slate-800 placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-500 ${
+                  className={`w-full pl-11 pr-4 py-3 bg-white/[0.06] border rounded-xl text-sm text-white placeholder-gray-500 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-400/60 ${
                     errors.password
                       ? 'border-red-400/60 focus:ring-red-500/40 focus:border-red-400/60'
-                      : 'border-slate-200 hover:border-primary-300'
+                      : 'border-white/[0.1] hover:border-white/[0.2]'
                   }`}
                   {...register('password', {
                     required: 'Password is required',
@@ -167,7 +167,7 @@ export default function LoginPage() {
                 />
               </div>
               {errors.password && (
-                <p className="text-xs text-red-600 mt-1.5 flex items-center gap-1">
+                <p className="text-xs text-red-400 mt-1.5 flex items-center gap-1">
                   <span className="inline-block w-1 h-1 rounded-full bg-red-400" />
                   {errors.password.message}
                 </p>
@@ -181,14 +181,14 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => fillDemoAccount('admin@jenovate.com', 'Admin@123')}
-                  className="py-1.5 px-3 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg text-xs text-primary-700 font-medium transition text-center"
+                  className="py-1.5 px-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-lg text-xs text-indigo-300 font-medium transition text-center"
                 >
                   Admin Demo
                 </button>
                 <button
                   type="button"
                   onClick={() => fillDemoAccount('employee@jenovate.com', 'Employee@123')}
-                  className="py-1.5 px-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs text-emerald-700 font-medium transition text-center"
+                  className="py-1.5 px-3 bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 rounded-lg text-xs text-emerald-300 font-medium transition text-center"
                 >
                   Employee Demo
                 </button>
@@ -200,7 +200,7 @@ export default function LoginPage() {
               id="login-submit-btn"
               type="submit"
               disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-primary-700 hover:bg-primary-600 text-white font-semibold text-sm rounded-xl transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2 focus:ring-offset-transparent"
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl transition-all duration-200 shadow-lg shadow-primary-600/20 hover:shadow-primary-500/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-primary-600/20 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:ring-offset-2 focus:ring-offset-transparent"
             >
               {isLoading ? (
                 <>
@@ -217,7 +217,7 @@ export default function LoginPage() {
           </form>
 
           {/* Divider */}
-          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+          <div className="mt-6 pt-6 border-t border-white/[0.08] text-center">
             <p className="text-xs text-gray-500">
               Authorized personnel only. All access is logged and monitored.
             </p>
@@ -225,7 +225,7 @@ export default function LoginPage() {
         </div>
 
         {/* Footer */}
-        <p className="text-center text-xs text-slate-400 mt-6">
+        <p className="text-center text-xs text-gray-500/60 mt-6">
           © {new Date().getFullYear()} Jenovate Technologies. All rights reserved.
         </p>
       </div>

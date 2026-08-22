@@ -37,12 +37,12 @@ const employeeNavItems = [
 ];
 
 const roleColors = {
-  admin: 'bg-primary-600',
+  admin: 'bg-indigo-500',
   employee: 'bg-emerald-500',
 };
 
 const roleBadgeStyles = {
-  admin: 'bg-primary-500/20 text-primary-100',
+  admin: 'bg-indigo-500/20 text-indigo-300',
   employee: 'bg-emerald-500/20 text-emerald-300',
 };
 
@@ -74,7 +74,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse, isOpen, onToggl
       <aside
         className={`
           fixed top-0 left-0 h-full z-50 flex flex-col
-          bg-primary-950 border-r border-primary-800/60 shadow-[8px_0_28px_rgba(23,53,67,0.12)]
+          bg-primary-950 border-r border-white/5
           transition-all duration-300 ease-in-out
           ${isCollapsed ? 'w-20' : 'w-64'}
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -84,12 +84,12 @@ export default function Sidebar({ isCollapsed, onToggleCollapse, isOpen, onToggl
         {/* Logo Section */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-white/10 flex-shrink-0">
           <Link to="/" className="flex items-center gap-3 overflow-hidden">
-            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-primary-700 border border-primary-400/40 flex items-center justify-center shadow-md">
+            <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <HiShieldCheck className="w-6 h-6 text-white" />
             </div>
             <span
               className={`
-                text-lg font-semibold tracking-[0.16em] text-white
+                text-lg font-bold tracking-wider text-beige-300
                 transition-all duration-300 whitespace-nowrap
                 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}
               `}
@@ -140,15 +140,15 @@ export default function Sidebar({ isCollapsed, onToggleCollapse, isOpen, onToggl
                   transition-all duration-200 relative overflow-hidden
                   ${
                     isActive
-                      ? 'bg-primary-800/80 text-primary-100 border-l-[3px] border-primary-300'
-                      : 'text-slate-300 hover:text-white hover:bg-white/10 border-l-[3px] border-transparent'
+                      ? 'bg-white/10 text-beige-300 border-l-[3px] border-beige-300'
+                      : 'text-gray-400 hover:text-white hover:bg-white/5 border-l-[3px] border-transparent'
                   }
                 `}
                 title={isCollapsed ? item.label : undefined}
               >
                 {/* Active indicator glow */}
                 {isActive && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-primary-400/15 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 to-transparent pointer-events-none" />
                 )}
 
                 <Icon
@@ -191,8 +191,8 @@ export default function Sidebar({ isCollapsed, onToggleCollapse, isOpen, onToggl
               }}
               className={`
                 w-full flex items-center gap-3 px-3 py-2.5 rounded-xl
-                text-primary-100 bg-primary-500/15 hover:bg-primary-500/25
-                border border-primary-400/25 hover:border-primary-300/40
+                text-indigo-300 bg-indigo-500/10 hover:bg-indigo-500/20
+                border border-indigo-500/20 hover:border-indigo-500/30
                 transition-all duration-200 group
                 ${isCollapsed ? 'justify-center' : ''}
               `}
@@ -216,7 +216,7 @@ export default function Sidebar({ isCollapsed, onToggleCollapse, isOpen, onToggl
         <div className="flex-shrink-0 border-t border-white/10 p-3">
           <div
             className={`
-              flex items-center gap-3 p-2 rounded-xl bg-white/[0.08]
+              flex items-center gap-3 p-2 rounded-xl bg-white/5
               transition-all duration-300
               ${isCollapsed ? 'justify-center' : ''}
             `}

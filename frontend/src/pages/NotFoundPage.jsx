@@ -11,10 +11,10 @@ export default function NotFoundPage() {
   }, []);
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-white">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-50 via-white to-primary-50">
       {/* Decorative elements */}
-      <div className="absolute top-[10%] right-[15%] w-[400px] h-[400px] rounded-full bg-primary-100/50 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-[10%] left-[10%] w-[350px] h-[350px] rounded-full bg-primary-100/40 blur-[80px] pointer-events-none" />
+      <div className="absolute top-[10%] right-[15%] w-[400px] h-[400px] rounded-full bg-primary-100/40 blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-[10%] left-[10%] w-[350px] h-[350px] rounded-full bg-indigo-100/30 blur-[80px] pointer-events-none" />
 
       <div
         className={`relative z-10 text-center px-6 transition-all duration-700 ease-out ${
@@ -25,7 +25,7 @@ export default function NotFoundPage() {
         <h1
           className="text-[180px] md:text-[220px] font-black leading-none tracking-tighter select-none"
           style={{
-            background: 'linear-gradient(135deg, #2c6177 0%, #66a9c1 100%)',
+            background: 'linear-gradient(135deg, #4c6ef5 0%, #7c3aed 50%, #ec4899 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',
             backgroundClip: 'text',
@@ -47,7 +47,7 @@ export default function NotFoundPage() {
           <button
             id="not-found-go-home-btn"
             onClick={() => navigate('/')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-700 hover:bg-primary-600 text-white font-semibold text-sm rounded-xl transition-all duration-200 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-primary-500/50"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-500 hover:to-indigo-500 text-white font-semibold text-sm rounded-xl transition-all duration-200 shadow-lg shadow-primary-600/20 hover:shadow-primary-500/30 focus:outline-none focus:ring-2 focus:ring-primary-500/50"
           >
             <HiHome className="w-4 h-4" />
             Go Home
