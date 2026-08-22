@@ -1,38 +1,56 @@
-/** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,jsx}'],
   theme: {
     extend: {
       colors: {
         primary: {
-          50: '#f0f4ff',
-          100: '#dbe4ff',
-          200: '#bac8ff',
-          300: '#91a7ff',
-          400: '#748ffc',
-          500: '#5c7cfa',
-          600: '#4c6ef5',
-          700: '#4263eb',
-          800: '#3b5bdb',
-          900: '#364fc7',
-          950: '#1a1a2e'
+          50: '#eef8fb',
+          100: '#d9edf4',
+          200: '#b9dce8',
+          300: '#8fc5d8',
+          400: '#66a9c1',
+          500: '#438ca9',
+          600: '#34758f',
+          700: '#2c6177',
+          800: '#285165',
+          900: '#234554',
+          950: '#173543'
+        },
+        accent: {
+          50: '#eef8fb',
+          100: '#d9edf4',
+          200: '#b9dce8',
+          300: '#8fc5d8',
+          400: '#66a9c1',
+          500: '#438ca9',
+          600: '#34758f',
+          700: '#2c6177',
+          800: '#285165',
+          900: '#234554',
+          950: '#173543'
+        },
+        indigo: {
+          50: '#eef8fb', 100: '#d9edf4', 200: '#b9dce8', 300: '#8fc5d8', 400: '#66a9c1', 500: '#438ca9', 600: '#34758f', 700: '#2c6177', 800: '#285165', 900: '#234554', 950: '#173543'
+        },
+        violet: {
+          50: '#f3f5f8', 100: '#e5eaf0', 200: '#cdd7e1', 300: '#aab9c7', 400: '#7f95a7', 500: '#607c91', 600: '#4d6779', 700: '#3e5566', 800: '#334754', 900: '#2a3b46', 950: '#1e2d36'
         },
         beige: {
-          50: '#fdfbf7',
-          100: '#faf5eb',
-          200: '#f5ead4',
-          300: '#e8d5b7',
-          400: '#d4b896',
-          500: '#c19b6f'
+          50: '#f7fcfd',
+          100: '#eef8fb',
+          200: '#d9edf4',
+          300: '#b9dce8',
+          400: '#8fc5d8',
+          500: '#66a9c1'
         },
         surface: {
-          50: '#faf9f6',
-          100: '#f5f3ef',
-          200: '#eae7e0'
+          50: '#ffffff',
+          100: '#f8fafc',
+          200: '#eef2f5'
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif']
+        sans: ['Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif']
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',
@@ -46,44 +64,20 @@ export default {
         'bounce-soft': 'bounceSoft 0.5s ease-out',
       },
       keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' }
-        },
-        slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' }
-        },
-        slideInLeft: {
-          '0%': { opacity: '0', transform: 'translateX(-20px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' }
-        },
-        slideInRight: {
-          '0%': { opacity: '0', transform: 'translateX(20px)' },
-          '100%': { opacity: '1', transform: 'translateX(0)' }
-        },
-        scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
-          '100%': { opacity: '1', transform: 'scale(1)' }
-        },
-        pulseSoft: {
-          '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.7' }
-        },
-        shimmer: {
-          '0%': { backgroundPosition: '-200% 0' },
-          '100%': { backgroundPosition: '200% 0' }
-        },
-        bounceSoft: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' }
-        }
+        fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+        slideUp: { '0%': { opacity: '0', transform: 'translateY(16px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+        slideInLeft: { '0%': { opacity: '0', transform: 'translateX(-20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+        slideInRight: { '0%': { opacity: '0', transform: 'translateX(20px)' }, '100%': { opacity: '1', transform: 'translateX(0)' } },
+        scaleIn: { '0%': { opacity: '0', transform: 'scale(0.98)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
+        pulseSoft: { '0%, 100%': { opacity: '1' }, '50%': { opacity: '0.7' } },
+        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
+        bounceSoft: { '0%, 100%': { transform: 'translateY(0)' }, '50%': { transform: 'translateY(-5px)' } }
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        'card': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04)',
-        'card-hover': '0 4px 12px rgba(0,0,0,0.08), 0 12px 28px rgba(0,0,0,0.06)',
-        'elevated': '0 10px 40px rgba(0,0,0,0.08)',
+        'glass': '0 12px 32px rgba(35, 82, 101, 0.08)',
+        'card': '0 1px 3px rgba(24, 51, 68, 0.06), 0 8px 22px rgba(24, 51, 68, 0.05)',
+        'card-hover': '0 6px 16px rgba(24, 51, 68, 0.10), 0 18px 34px rgba(24, 51, 68, 0.08)',
+        'elevated': '0 20px 46px rgba(24, 51, 68, 0.12)',
       }
     }
   },
