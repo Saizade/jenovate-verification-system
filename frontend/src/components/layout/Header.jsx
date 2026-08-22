@@ -43,7 +43,7 @@ function getBreadcrumb(pathname) {
 }
 
 const roleColors = {
-  admin: 'bg-indigo-500',
+  admin: 'bg-primary-600',
   employee: 'bg-emerald-500',
 };
 
@@ -86,7 +86,7 @@ export default function Header({ onMenuClick }) {
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-lg border-b border-surface-200">
+    <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-[0_1px_0_rgba(24,51,68,0.04)]">
       <div className="flex items-center justify-between h-16 px-4 sm:px-6">
         {/* Left Section */}
         <div className="flex items-center gap-4">
@@ -108,7 +108,7 @@ export default function Header({ onMenuClick }) {
                   {index > 0 && <HiChevronRight className="w-3 h-3" />}
                   <Link
                     to={crumb.path}
-                    className="hover:text-primary-600 transition-colors duration-150"
+                    className="hover:text-primary-700 transition-colors duration-150"
                   >
                     {crumb.label}
                   </Link>
@@ -139,7 +139,7 @@ export default function Header({ onMenuClick }) {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="w-full pl-9 pr-4 py-2 bg-surface-50 border border-surface-200 rounded-full text-sm text-primary-950 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400 focus:bg-white transition-all duration-200"
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-primary-950 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-200 focus:border-primary-400 focus:bg-white transition-all duration-200"
               id="header-search-input"
             />
             {searchQuery && (
@@ -160,7 +160,7 @@ export default function Header({ onMenuClick }) {
           >
             <HiBell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-bold rounded-full ring-2 ring-white animate-pulse">
+              <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[10px] font-bold rounded-full ring-2 ring-white">
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
@@ -189,7 +189,7 @@ export default function Header({ onMenuClick }) {
 
             {/* Dropdown menu */}
             {isDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-surface-200 overflow-hidden animate-[scaleIn_0.15s_ease-out] origin-top-right z-50">
+              <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-elevated border border-slate-200 overflow-hidden animate-[scaleIn_0.15s_ease-out] origin-top-right z-50">
                 {/* User info header */}
                 <div className="px-4 py-3 bg-surface-50 border-b border-surface-100">
                   <div className="flex items-center gap-3">
@@ -259,7 +259,7 @@ export default function Header({ onMenuClick }) {
                 className={`
                   w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl font-black mb-3
                   ${roleColors[user?.role] || 'bg-gray-500'}
-                  shadow-md shadow-gray-200
+                  shadow-md shadow-primary-900/10
                 `}
               >
                 {userInitial}
@@ -291,7 +291,7 @@ export default function Header({ onMenuClick }) {
               <button
                 type="button"
                 onClick={() => setIsProfileOpen(false)}
-                className="px-4 py-2 bg-primary-950 text-white rounded-xl text-xs font-semibold hover:bg-primary-900 transition"
+                className="px-4 py-2 bg-primary-700 text-white rounded-lg text-xs font-semibold hover:bg-primary-600 transition"
               >
                 Close Profile
               </button>

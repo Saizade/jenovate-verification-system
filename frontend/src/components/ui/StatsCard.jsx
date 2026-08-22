@@ -2,32 +2,32 @@ import { HiArrowTrendingUp, HiArrowTrendingDown } from 'react-icons/hi2';
 
 const colorConfig = {
   primary: {
-    gradient: 'from-primary-500 to-primary-600',
+    gradient: 'from-primary-700 to-primary-800',
     lightBg: 'bg-primary-50',
     ring: 'ring-primary-100',
   },
   success: {
-    gradient: 'from-emerald-500 to-emerald-600',
+    gradient: 'from-emerald-700 to-emerald-800',
     lightBg: 'bg-emerald-50',
     ring: 'ring-emerald-100',
   },
   danger: {
-    gradient: 'from-red-500 to-red-600',
+    gradient: 'from-red-700 to-red-800',
     lightBg: 'bg-red-50',
     ring: 'ring-red-100',
   },
   warning: {
-    gradient: 'from-amber-500 to-amber-600',
+    gradient: 'from-amber-700 to-amber-800',
     lightBg: 'bg-amber-50',
     ring: 'ring-amber-100',
   },
   info: {
-    gradient: 'from-blue-500 to-blue-600',
+    gradient: 'from-primary-600 to-primary-700',
     lightBg: 'bg-blue-50',
     ring: 'ring-blue-100',
   },
   purple: {
-    gradient: 'from-violet-500 to-violet-600',
+    gradient: 'from-primary-600 to-primary-800',
     lightBg: 'bg-violet-50',
     ring: 'ring-violet-100',
   },
@@ -47,13 +47,13 @@ const StatsCard = ({
 
   return (
     <div
-      className={`bg-white rounded-2xl border border-surface-200 p-6 transition-all duration-300 ease-out
-        hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] group ${className}`}
+      className={`bg-white rounded-2xl border border-slate-200 p-6 transition-all duration-200 ease-out
+        hover:-translate-y-0.5 hover:shadow-card-hover group ${className}`}
       style={{ animation: 'slideUp 0.4s ease-out backwards' }}
     >
       <div className="flex items-start justify-between mb-4">
         <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${config.gradient} flex items-center justify-center
-          shadow-lg ring-4 ${config.ring} group-hover:scale-110 transition-transform duration-300`}>
+          shadow-md ring-4 ${config.ring} group-hover:scale-105 transition-transform duration-300`}>
           {Icon && <Icon className="w-6 h-6 text-white" />}
         </div>
         {change !== undefined && change !== null && (

@@ -22,10 +22,10 @@ import {
   HiCreditCard, HiArrowTrendingUp, HiMagnifyingGlass
 } from 'react-icons/hi2';
 
-const STATE_COLORS = ['#e11d48', '#2563eb', '#059669', '#d97706', '#9333ea', '#0891b2', '#f59e0b', '#ec4899'];
-const PAYMENT_STATUS_COLORS = ['#10b981', '#f59e0b'];
-const DEPT_COLORS = ['#6366f1', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
-const PAYMENT_MODE_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
+const STATE_COLORS = ['#2c6177', '#438ca9', '#3b806b', '#8a6840', '#607c91', '#4f8ca9', '#9a774d', '#6b6a8b'];
+const PAYMENT_STATUS_COLORS = ['#3b806b', '#9a774d'];
+const DEPT_COLORS = ['#438ca9', '#607c91', '#6b6a8b', '#3b806b', '#8a6840'];
+const PAYMENT_MODE_COLORS = ['#438ca9', '#3b806b', '#9a774d', '#607c91', '#ad5962'];
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
@@ -450,7 +450,7 @@ export default function AdminDashboard() {
                       name === 'count' ? 'Enrolled' : name === 'totalCollected' ? 'Collected' : 'Pending'
                     ]}
                   />
-                  <Bar dataKey="count" name="count" fill="#e11d48" radius={[4, 4, 0, 0]} onClick={(data) => navigateToStudents({ state: data.state })} />
+                  <Bar dataKey="count" name="count" fill="#2c6177" radius={[4, 4, 0, 0]} onClick={(data) => navigateToStudents({ state: data.state })} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -476,7 +476,7 @@ export default function AdminDashboard() {
                   <XAxis type="number" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <YAxis type="category" dataKey="course" stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} width={100} />
                   <Tooltip formatter={(value) => [`${value} Students`, 'Total Enrolled']} />
-                  <Bar dataKey="count" name="Students" fill="#4f46e5" radius={[0, 4, 4, 0]} barSize={16} onClick={(data) => navigateToStudents({ course: data.course })} />
+                  <Bar dataKey="count" name="Students" fill="#438ca9" radius={[0, 4, 4, 0]} barSize={16} onClick={(data) => navigateToStudents({ course: data.course })} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -540,12 +540,12 @@ export default function AdminDashboard() {
                 <AreaChart data={monthlyCollection} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorCollected" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#3b806b" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3b806b" stopOpacity={0}/>
                     </linearGradient>
                     <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#9a774d" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#9a774d" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
@@ -553,8 +553,8 @@ export default function AdminDashboard() {
                   <YAxis stroke="#94a3b8" fontSize={11} tickLine={false} axisLine={false} />
                   <Tooltip formatter={(value) => formatCurrency(value)} />
                   <Legend />
-                  <Area type="monotone" dataKey="collected" name="Collected Fees (₹)" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorCollected)" />
-                  <Area type="monotone" dataKey="pending" name="Pending Dues (₹)" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorPending)" />
+                  <Area type="monotone" dataKey="collected" name="Collected Fees (₹)" stroke="#3b806b" strokeWidth={2} fillOpacity={1} fill="url(#colorCollected)" />
+                  <Area type="monotone" dataKey="pending" name="Pending Dues (₹)" stroke="#9a774d" strokeWidth={2} fillOpacity={1} fill="url(#colorPending)" />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (

@@ -121,11 +121,11 @@ export default function StudentRegistration() {
   if (successData) {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4 animate-fade-in">
-        <Card className="text-center p-8 md:p-12 border-2 border-emerald-100 bg-white/95 shadow-xl rounded-2xl relative overflow-hidden">
+        <Card className="text-center p-8 md:p-12 border border-primary-100 bg-white/95 shadow-xl rounded-2xl relative overflow-hidden">
           {/* Confetti decoration */}
-          <div className="absolute top-0 inset-x-0 h-2 bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600"></div>
+          <div className="absolute top-0 inset-x-0 h-2 bg-primary-700"></div>
           
-          <div className="mx-auto w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mb-6 shadow-inner animate-pulse">
+          <div className="mx-auto w-20 h-20 bg-primary-50 rounded-full flex items-center justify-center text-primary-600 mb-6 shadow-inner animate-pulse">
             <HiCheckCircle className="w-12 h-12" />
           </div>
 
@@ -202,7 +202,7 @@ export default function StudentRegistration() {
                     currentStep > idx
                       ? 'bg-emerald-500 border-emerald-500 text-white shadow-sm'
                       : currentStep === idx
-                      ? 'bg-primary-950 border-primary-950 text-white shadow-md shadow-primary-950/20 scale-110'
+                      ? 'bg-primary-700 border-primary-700 text-white shadow-md shadow-primary-900/15 scale-110'
                       : 'bg-white border-gray-200 text-gray-400'
                   }`}
                 >
@@ -210,7 +210,7 @@ export default function StudentRegistration() {
                 </div>
                 <span
                   className={`text-xs font-bold mt-2 whitespace-nowrap tracking-tight transition-all duration-300 ${
-                    currentStep === idx ? 'text-primary-950 font-extrabold' : 'text-gray-400'
+                    currentStep === idx ? 'text-primary-800 font-extrabold' : 'text-gray-400'
                   }`}
                 >
                   {step}
@@ -261,7 +261,7 @@ export default function StudentRegistration() {
               variant="primary"
               onClick={handleSubmit(onSubmit)}
               loading={isSubmitting}
-              className="px-8 flex items-center gap-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700"
+              className="px-8 flex items-center gap-1.5 bg-primary-700 hover:bg-primary-600"
             >
               Submit Registration <HiCheckCircle className="w-4.5 h-4.5" />
             </Button>
