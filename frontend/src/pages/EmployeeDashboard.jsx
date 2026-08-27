@@ -174,7 +174,7 @@ export default function EmployeeDashboard() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-extrabold text-primary-950 tracking-tight">
+        <h1 className="text-2xl font-heading font-extrabold text-ocean-950 tracking-tight">
           Employee Verification Portal
         </h1>
         <p className="text-gray-500 text-sm mt-1">
@@ -188,18 +188,18 @@ export default function EmployeeDashboard() {
           title="My Submissions"
           value={totalSubmissions}
           icon={HiClipboardDocumentList}
-          color="indigo"
+          color="primary"
           description="Total submissions entered"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Verification Form */}
-        <Card title="New Verification Form" subtitle="Enter student transaction details" className="p-5 lg:col-span-1 border border-gray-100 bg-white shadow-md rounded-2xl">
+        <Card title="New Verification Form" subtitle="Enter student transaction details" className="p-5 lg:col-span-1 border border-surface-200 bg-white shadow-card rounded-2xl">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             {/* Date */}
             <div>
-              <label htmlFor="emp-date" className="form-label text-xs font-bold uppercase text-gray-500">
+              <label htmlFor="emp-date" className="form-label text-xs font-semibold uppercase text-gray-500">
                 Date <span className="text-red-500">*</span>
               </label>
               <input
@@ -213,7 +213,7 @@ export default function EmployeeDashboard() {
 
             {/* Student Name */}
             <div>
-              <label htmlFor="emp-student-name" className="form-label text-xs font-bold uppercase text-gray-500">
+              <label htmlFor="emp-student-name" className="form-label text-xs font-semibold uppercase text-gray-500">
                 Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -228,7 +228,7 @@ export default function EmployeeDashboard() {
 
             {/* Reference ID */}
             <div>
-              <label htmlFor="emp-ref-id" className="form-label text-xs font-bold uppercase text-gray-500">
+              <label htmlFor="emp-ref-id" className="form-label text-xs font-semibold uppercase text-gray-500">
                 Ref ID <span className="text-red-500">*</span>
               </label>
               <input
@@ -250,7 +250,7 @@ export default function EmployeeDashboard() {
             {/* WhatsApp No & Email */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label htmlFor="emp-whatsapp" className="form-label text-xs font-bold uppercase text-gray-500">
+                <label htmlFor="emp-whatsapp" className="form-label text-xs font-semibold uppercase text-gray-500">
                   WhatsApp No
                 </label>
                 <input
@@ -262,7 +262,7 @@ export default function EmployeeDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="emp-email" className="form-label text-xs font-bold uppercase text-gray-500">
+                <label htmlFor="emp-email" className="form-label text-xs font-semibold uppercase text-gray-500">
                   Email
                 </label>
                 <input
@@ -277,13 +277,13 @@ export default function EmployeeDashboard() {
 
             {/* Number of Courses Selected (1 to 3) */}
             <div>
-              <label htmlFor="emp-num-courses" className="form-label text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
-                <HiHashtag className="w-4 h-4 text-primary-600" />
+              <label htmlFor="emp-num-courses" className="form-label text-xs font-semibold uppercase text-gray-500 flex items-center gap-1">
+                <HiHashtag className="w-4 h-4 text-ocean-600" />
                 No. of Courses Selected <span className="text-red-500">*</span>
               </label>
               <select
                 id="emp-num-courses"
-                className="form-select mt-1 border-primary-300 font-semibold text-primary-950 bg-primary-50/40"
+                className="form-select mt-1 border-ocean-300 font-semibold text-ocean-950 bg-ocean-50/40"
                 {...register('numCoursesSelected', { required: 'Please select number of courses' })}
               >
                 <option value="1">1 Course</option>
@@ -293,9 +293,9 @@ export default function EmployeeDashboard() {
             </div>
 
             {/* Dynamic Course Name Input Boxes */}
-            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-              <label className="text-xs font-extrabold text-gray-700 flex items-center gap-1.5 uppercase tracking-wider">
-                <HiBookOpen className="w-4 h-4 text-primary-600" />
+            <div className="p-3.5 bg-surface-50 border border-surface-200 rounded-xl space-y-3">
+              <label className="text-xs font-bold text-ocean-950 flex items-center gap-1.5 uppercase tracking-wider">
+                <HiBookOpen className="w-4 h-4 text-ocean-600" />
                 Course Names ({numCoursesSelected} selected)
               </label>
 
@@ -349,7 +349,7 @@ export default function EmployeeDashboard() {
             {/* Payment Mode & Revenue Channel */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label htmlFor="emp-payment-mode" className="form-label text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
+                <label htmlFor="emp-payment-mode" className="form-label text-xs font-semibold uppercase text-gray-500 flex items-center gap-1">
                   <HiCreditCard className="w-4 h-4 text-emerald-600" />
                   Payment Mode
                 </label>
@@ -362,7 +362,7 @@ export default function EmployeeDashboard() {
                 />
               </div>
               <div>
-                <label htmlFor="emp-revenue-channel" className="form-label text-xs font-bold uppercase text-gray-500 flex items-center gap-1">
+                <label htmlFor="emp-revenue-channel" className="form-label text-xs font-semibold uppercase text-gray-500 flex items-center gap-1">
                   <HiTag className="w-4 h-4 text-emerald-600" />
                   Revenue Channel
                 </label>
@@ -379,7 +379,7 @@ export default function EmployeeDashboard() {
             {/* Fees Paid & Program Price */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label htmlFor="emp-fees" className="form-label text-xs font-bold uppercase text-gray-500">
+                <label htmlFor="emp-fees" className="form-label text-xs font-semibold uppercase text-gray-500">
                   Fees Paid (₹) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -396,7 +396,7 @@ export default function EmployeeDashboard() {
               </div>
 
               <div>
-                <label htmlFor="emp-program-price" className="form-label text-xs font-bold uppercase text-gray-500">
+                <label htmlFor="emp-program-price" className="form-label text-xs font-semibold uppercase text-gray-500">
                   Program Price (₹)
                 </label>
                 <input
@@ -411,21 +411,21 @@ export default function EmployeeDashboard() {
 
             {/* Pending Amount */}
             <div>
-              <label htmlFor="emp-pending" className="form-label text-xs font-bold uppercase text-gray-500">
+              <label htmlFor="emp-pending" className="form-label text-xs font-semibold uppercase text-gray-500">
                 Pending Amount (₹)
               </label>
               <input
                 id="emp-pending"
                 type="number"
                 placeholder="Auto-calculated"
-                className="form-input mt-1 bg-gray-50 font-semibold"
+                className="form-input mt-1 bg-surface-50 font-semibold"
                 {...register('pendingAmount')}
               />
             </div>
 
             {/* Remarks */}
             <div>
-              <label htmlFor="emp-remarks" className="form-label text-xs font-bold uppercase text-gray-500">
+              <label htmlFor="emp-remarks" className="form-label text-xs font-semibold uppercase text-gray-500">
                 Remarks
               </label>
               <textarea
@@ -440,7 +440,7 @@ export default function EmployeeDashboard() {
               type="submit"
               variant="primary"
               loading={submitting}
-              className="w-full flex items-center justify-center gap-2 mt-4 bg-gradient-to-r from-primary-950 to-primary-800 hover:from-primary-900"
+              className="w-full flex items-center justify-center gap-2 mt-4"
             >
               <HiDocumentPlus className="w-5 h-5" />
               Submit Details
@@ -449,18 +449,18 @@ export default function EmployeeDashboard() {
         </Card>
 
         {/* Previous Submissions Table */}
-        <Card title="My Verification Records" subtitle="Previous entries submitted by you" className="p-5 lg:col-span-2 border border-gray-100 bg-white shadow-md rounded-2xl">
+        <Card title="My Verification Records" subtitle="Previous entries submitted by you" className="p-5 lg:col-span-2 border border-surface-200 bg-white shadow-card rounded-2xl">
           <Table
             headers={['Date', 'Ref ID', 'Name', 'Course Opted', 'Payment Mode', 'Revenue Channel', 'Fees Paid', 'Pending', 'Submitted At']}
             rows={submissions.map((sub) => [
               <span className="text-xs text-gray-600" key={`date-${sub.id}`}>{sub.date || '—'}</span>,
-              <span className="font-mono text-xs font-bold text-gray-800" key={`ref-${sub.id}`}>{sub.reference_id}</span>,
-              <span className="font-semibold text-gray-800" key={`name-${sub.id}`}>{sub.student_name}</span>,
-              <span className="text-xs font-medium text-gray-700 bg-gray-100 px-2 py-0.5 rounded" key={`course-${sub.id}`}>{sub.course_opted}</span>,
-              <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded" key={`mode-${sub.id}`}>{sub.payment_mode || '—'}</span>,
+              <span className="font-mono text-xs font-semibold text-ocean-950" key={`ref-${sub.id}`}>{sub.reference_id}</span>,
+              <span className="font-semibold text-ocean-950" key={`name-${sub.id}`}>{sub.student_name}</span>,
+              <span className="text-xs font-medium text-ocean-700 bg-ocean-50 px-2 py-0.5 rounded" key={`course-${sub.id}`}>{sub.course_opted}</span>,
+              <span className="text-xs font-semibold text-ocean-700 bg-ocean-50 px-2 py-0.5 rounded" key={`mode-${sub.id}`}>{sub.payment_mode || '—'}</span>,
               <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded" key={`channel-${sub.id}`}>{sub.revenue_channel || '—'}</span>,
-              <span className="font-bold text-gray-800" key={`fees-${sub.id}`}>{formatCurrency(sub.fees_paid)}</span>,
-              <span className="text-xs font-semibold text-amber-600" key={`pending-${sub.id}`}>{sub.pending_amount ? formatCurrency(sub.pending_amount) : '—'}</span>,
+              <span className="font-semibold text-ocean-950" key={`fees-${sub.id}`}>{formatCurrency(sub.fees_paid)}</span>,
+              <span className="text-xs font-semibold text-amber-700" key={`pending-${sub.id}`}>{sub.pending_amount ? formatCurrency(sub.pending_amount) : '—'}</span>,
               <span className="text-xs text-gray-400" key={`at-${sub.id}`}>{new Date(sub.created_at).toLocaleDateString()}</span>
             ])}
           />

@@ -31,24 +31,24 @@ function App() {
             toastOptions={{
               duration: 4000,
               style: {
-                background: '#1a1a2e',
-                color: '#faf9f6',
-                borderRadius: '12px',
-                padding: '14px 20px',
-                fontSize: '14px',
-                fontFamily: 'Inter, system-ui, sans-serif',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.15)',
+                background: '#0c1e3a',
+                color: '#f8fafc',
+                borderRadius: '10px',
+                padding: '12px 18px',
+                fontSize: '13px',
+                fontFamily: '"DM Sans", system-ui, sans-serif',
+                boxShadow: '0 8px 30px rgba(0,0,0,0.18)',
               },
               success: {
                 iconTheme: {
-                  primary: '#37b24d',
-                  secondary: '#faf9f6',
+                  primary: '#10b981',
+                  secondary: '#0c1e3a',
                 },
               },
               error: {
                 iconTheme: {
-                  primary: '#e03131',
-                  secondary: '#faf9f6',
+                  primary: '#ef4444',
+                  secondary: '#0c1e3a',
                 },
               },
             }}
