@@ -1,16 +1,16 @@
 const variantStyles = {
-  success: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-  danger: 'bg-red-50 text-red-700 border border-red-200',
-  warning: 'bg-amber-50 text-amber-700 border border-amber-200',
-  info: 'bg-blue-50 text-blue-700 border border-blue-200',
-  neutral: 'bg-gray-50 text-gray-600 border border-gray-200',
+  success: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
+  danger: 'bg-red-50 text-red-700 border border-red-200/60',
+  warning: 'bg-amber-50 text-amber-700 border border-amber-200/60',
+  info: 'bg-ocean-50 text-ocean-700 border border-ocean-200/60',
+  neutral: 'bg-gray-50 text-gray-600 border border-gray-200/60',
 };
 
 const dotColors = {
   success: 'bg-emerald-500',
   danger: 'bg-red-500',
   warning: 'bg-amber-500',
-  info: 'bg-blue-500',
+  info: 'bg-ocean-500',
   neutral: 'bg-gray-400',
 };
 
@@ -26,9 +26,9 @@ const Badge = ({ children, variant = 'neutral', dot = false, size = 'md', classN
         ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
     >
       {dot && (
-        <span className="relative flex h-2 w-2">
+        <span className="relative flex h-1.5 w-1.5">
           <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${dotColors[variant]}`} />
-          <span className={`relative inline-flex rounded-full h-2 w-2 ${dotColors[variant]}`} />
+          <span className={`relative inline-flex rounded-full h-1.5 w-1.5 ${dotColors[variant]}`} />
         </span>
       )}
       {children}

@@ -1,17 +1,17 @@
 import { forwardRef } from 'react';
 
 const variants = {
-  primary: 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-md hover:shadow-lg',
-  secondary: 'bg-beige-200 text-primary-950 hover:bg-beige-300',
-  danger: 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:from-red-600 hover:to-red-700',
-  ghost: 'bg-transparent text-gray-600 hover:bg-surface-100 hover:text-primary-950',
-  outline: 'border-2 border-primary-200 text-primary-700 hover:bg-primary-50 hover:border-primary-300',
+  primary: 'bg-ocean-600 text-white hover:bg-ocean-700 shadow-sm hover:shadow-md',
+  secondary: 'bg-surface-100 text-ocean-950 hover:bg-surface-200',
+  danger: 'bg-red-500 text-white hover:bg-red-600 shadow-sm',
+  ghost: 'bg-transparent text-gray-600 hover:bg-surface-100 hover:text-ocean-950',
+  outline: 'border border-surface-200 text-gray-700 hover:bg-surface-50 hover:border-ocean-300 hover:text-ocean-700',
 };
 
 const sizes = {
   sm: 'px-3 py-1.5 text-xs rounded-lg gap-1.5',
-  md: 'px-5 py-2.5 text-sm rounded-xl gap-2',
-  lg: 'px-7 py-3.5 text-base rounded-xl gap-2.5',
+  md: 'px-4 py-2 text-sm rounded-lg gap-2',
+  lg: 'px-6 py-3 text-sm rounded-lg gap-2.5',
 };
 
 const Button = forwardRef(({ children, variant = 'primary', size = 'md', loading = false, disabled = false, icon: Icon, className = '', ...props }, ref) => {
@@ -19,7 +19,7 @@ const Button = forwardRef(({ children, variant = 'primary', size = 'md', loading
     <button
       ref={ref}
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center font-semibold transition-all duration-200 ease-out
+      className={`inline-flex items-center justify-center font-semibold transition-all duration-150 ease-out
         ${variants[variant]} ${sizes[size]}
         ${(disabled || loading) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer active:scale-[0.98]'}
         ${className}`}

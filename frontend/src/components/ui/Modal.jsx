@@ -35,19 +35,19 @@ const Modal = ({ isOpen, onClose, title, children, footer, size = 'md' }) => {
     <div
       ref={overlayRef}
       onClick={handleOverlayClick}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-primary-950/40 backdrop-blur-sm"
-      style={{ animation: 'fadeIn 0.2s ease-out' }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ocean-950/30 backdrop-blur-sm"
+      style={{ animation: 'fadeIn 0.15s ease-out' }}
     >
       <div
-        className={`w-full ${sizeStyles[size]} bg-white rounded-2xl shadow-2xl overflow-hidden`}
-        style={{ animation: 'scaleIn 0.25s ease-out' }}
+        className={`w-full ${sizeStyles[size]} bg-white rounded-2xl shadow-elevated overflow-hidden`}
+        style={{ animation: 'scaleIn 0.2s ease-out' }}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-surface-100">
-          <h2 className="text-lg font-semibold text-primary-950">{title}</h2>
+          <h2 className="text-base font-heading font-bold text-ocean-950">{title}</h2>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-primary-950 hover:bg-surface-100 transition-colors duration-150"
+            className="p-1.5 rounded-lg text-gray-400 hover:text-ocean-950 hover:bg-surface-100 transition-colors duration-100"
             aria-label="Close modal"
           >
             <HiXMark className="w-5 h-5" />

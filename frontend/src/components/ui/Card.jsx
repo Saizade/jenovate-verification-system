@@ -1,9 +1,9 @@
 import { forwardRef } from 'react';
 
 const variantStyles = {
-  default: 'bg-white border border-surface-200 shadow-sm',
-  glass: 'bg-white/70 backdrop-blur-xl border border-white/20 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]',
-  bordered: 'bg-white border-2 border-primary-100',
+  default: 'bg-white border border-surface-200 shadow-card',
+  glass: 'bg-white/85 backdrop-blur-lg border border-surface-200/60 shadow-glass',
+  bordered: 'bg-white border-2 border-ocean-100',
 };
 
 const paddingStyles = {
@@ -20,25 +20,36 @@ const Card = forwardRef(({
   padding = 'md',
   className = '',
   header,
+  title,
+  subtitle,
+  headerAction,
   footer,
   ...props
 }, ref) => {
   return (
     <div
       ref={ref}
-      className={`rounded-2xl overflow-hidden transition-all duration-300 ease-out
+      className={`rounded-2xl overflow-hidden transition-all duration-200 ease-out
         ${variantStyles[variant]}
-        ${hover ? 'hover:-translate-y-1 hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] cursor-pointer' : ''}
+        ${hover ? 'hover:-translate-y-0.5 hover:shadow-card-hover cursor-pointer' : ''}
         ${className}`}
       {...props}
     >
-      {header && (
-        <div className="px-6 py-4 border-b border-surface-100">
-          {typeof header === 'string' ? (
-            <h3 className="text-base font-semibold text-primary-950">{header}</h3>
-          ) : (
-            header
-          )}
+      {(header || title) && (
+        <div className="px-6 py-4 border-b border-surface-100 flex items-center justify-between">
+          <div>
+            {typeof header === 'string' ? (
+              <h3 className="text-sm font-heading font-bold text-ocean-950">{header}</h3>
+            ) : header ? (
+              header
+            ) : (
+              <>
+                {title && <h3 className="text-sm font-heading font-bold text-ocean-950">{title}</h3>}
+                {subtitle && <p className="text-xs text-gray-400 mt-0.5">{subtitle}</p>}
+              </>
+            )}
+          </div>
+          {headerAction && <div>{headerAction}</div>}
         </div>
       )}
       <div className={paddingStyles[padding]}>

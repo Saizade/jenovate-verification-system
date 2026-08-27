@@ -9,7 +9,7 @@ import {
 
 const variantConfig = {
   success: {
-    bg: 'bg-emerald-50 border-emerald-200',
+    bg: 'bg-emerald-50 border-emerald-200/70',
     icon: HiCheckCircle,
     iconColor: 'text-emerald-500',
     titleColor: 'text-emerald-800',
@@ -17,7 +17,7 @@ const variantConfig = {
     dismissColor: 'text-emerald-400 hover:text-emerald-600 hover:bg-emerald-100',
   },
   error: {
-    bg: 'bg-red-50 border-red-200',
+    bg: 'bg-red-50 border-red-200/70',
     icon: HiXCircle,
     iconColor: 'text-red-500',
     titleColor: 'text-red-800',
@@ -25,7 +25,7 @@ const variantConfig = {
     dismissColor: 'text-red-400 hover:text-red-600 hover:bg-red-100',
   },
   warning: {
-    bg: 'bg-amber-50 border-amber-200',
+    bg: 'bg-amber-50 border-amber-200/70',
     icon: HiExclamationTriangle,
     iconColor: 'text-amber-500',
     titleColor: 'text-amber-800',
@@ -33,12 +33,12 @@ const variantConfig = {
     dismissColor: 'text-amber-400 hover:text-amber-600 hover:bg-amber-100',
   },
   info: {
-    bg: 'bg-blue-50 border-blue-200',
+    bg: 'bg-ocean-50 border-ocean-200/70',
     icon: HiInformationCircle,
-    iconColor: 'text-blue-500',
-    titleColor: 'text-blue-800',
-    messageColor: 'text-blue-700',
-    dismissColor: 'text-blue-400 hover:text-blue-600 hover:bg-blue-100',
+    iconColor: 'text-ocean-500',
+    titleColor: 'text-ocean-800',
+    messageColor: 'text-ocean-700',
+    dismissColor: 'text-ocean-400 hover:text-ocean-600 hover:bg-ocean-100',
   },
 };
 

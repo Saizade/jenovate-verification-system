@@ -4,46 +4,39 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50: '#f0f4ff',
-          100: '#dbe4ff',
-          200: '#bac8ff',
-          300: '#91a7ff',
-          400: '#748ffc',
-          500: '#5c7cfa',
-          600: '#4c6ef5',
-          700: '#4263eb',
-          800: '#3b5bdb',
-          900: '#364fc7',
-          950: '#1a1a2e'
-        },
-        beige: {
-          50: '#fdfbf7',
-          100: '#faf5eb',
-          200: '#f5ead4',
-          300: '#e8d5b7',
-          400: '#d4b896',
-          500: '#c19b6f'
+        ocean: {
+          50: '#f0f7fd',
+          100: '#dceefb',
+          200: '#b3ddf5',
+          300: '#7cc4f0',
+          400: '#3fa7e8',
+          500: '#1a8fd4',
+          600: '#0e6ba8',
+          700: '#174580',
+          800: '#133460',
+          900: '#0f2847',
+          950: '#0c1e3a',
         },
         surface: {
-          50: '#faf9f6',
-          100: '#f5f3ef',
-          200: '#eae7e0'
-        }
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+        },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif']
+        sans: ['"DM Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        heading: ['"Plus Jakarta Sans"', '"DM Sans"', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       animation: {
-        'fade-in': 'fadeIn 0.5s ease-out',
-        'slide-up': 'slideUp 0.5s ease-out',
-        'slide-in-left': 'slideInLeft 0.3s ease-out',
-        'slide-in-right': 'slideInRight 0.3s ease-out',
-        'scale-in': 'scaleIn 0.3s ease-out',
-        'pulse-soft': 'pulseSoft 2s infinite',
-        'shimmer': 'shimmer 1.5s infinite',
-        'count-up': 'countUp 1s ease-out',
-        'bounce-soft': 'bounceSoft 0.5s ease-out',
+        'fade-in': 'fadeIn 0.4s ease-out',
+        'slide-up': 'slideUp 0.4s ease-out',
+        'slide-in-left': 'slideInLeft 0.25s ease-out',
+        'slide-in-right': 'slideInRight 0.25s ease-out',
+        'scale-in': 'scaleIn 0.2s ease-out',
+        'pulse-soft': 'pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'shimmer': 'shimmer 1.8s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -51,39 +44,39 @@ export default {
           '100%': { opacity: '1' }
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(20px)' },
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' }
         },
         slideInLeft: {
-          '0%': { opacity: '0', transform: 'translateX(-20px)' },
+          '0%': { opacity: '0', transform: 'translateX(-12px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' }
         },
         slideInRight: {
-          '0%': { opacity: '0', transform: 'translateX(20px)' },
+          '0%': { opacity: '0', transform: 'translateX(12px)' },
           '100%': { opacity: '1', transform: 'translateX(0)' }
         },
         scaleIn: {
-          '0%': { opacity: '0', transform: 'scale(0.95)' },
+          '0%': { opacity: '0', transform: 'scale(0.97)' },
           '100%': { opacity: '1', transform: 'scale(1)' }
         },
         pulseSoft: {
           '0%, 100%': { opacity: '1' },
-          '50%': { opacity: '0.7' }
+          '50%': { opacity: '0.75' }
         },
         shimmer: {
           '0%': { backgroundPosition: '-200% 0' },
           '100%': { backgroundPosition: '200% 0' }
         },
-        bounceSoft: {
-          '0%, 100%': { transform: 'translateY(0)' },
-          '50%': { transform: 'translateY(-5px)' }
-        }
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
-        'card': '0 1px 3px rgba(0,0,0,0.04), 0 6px 16px rgba(0,0,0,0.04)',
-        'card-hover': '0 4px 12px rgba(0,0,0,0.08), 0 12px 28px rgba(0,0,0,0.06)',
-        'elevated': '0 10px 40px rgba(0,0,0,0.08)',
+        'card': '0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)',
+        'card-hover': '0 4px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04)',
+        'elevated': '0 8px 30px rgba(0,0,0,0.06)',
+        'glass': '0 4px 24px rgba(12,30,58,0.05)',
+      },
+      borderRadius: {
+        '2xl': '14px',
+        '3xl': '18px',
       }
     }
   },

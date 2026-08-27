@@ -7,7 +7,6 @@ export default function DashboardLayout() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Auto-collapse sidebar on medium screens
   useEffect(() => {
     function handleResize() {
       const width = window.innerWidth;
@@ -24,7 +23,6 @@ export default function DashboardLayout() {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Prevent body scroll when mobile sidebar is open
   useEffect(() => {
     if (isMobileOpen) {
       document.body.style.overflow = 'hidden';
@@ -40,7 +38,7 @@ export default function DashboardLayout() {
   const toggleMobile = () => setIsMobileOpen((prev) => !prev);
 
   return (
-    <div className="min-h-screen bg-surface-50">
+    <div className="min-h-screen bg-[#f8fafc]">
       {/* Sidebar */}
       <Sidebar
         isCollapsed={isCollapsed}
@@ -51,13 +49,10 @@ export default function DashboardLayout() {
 
       {/* Main content area */}
       <div
-        className={`
-          flex flex-col min-h-screen transition-all duration-300 ease-in-out
-          lg:ml-${isCollapsed ? '20' : '64'}
-        `}
+        className="flex flex-col min-h-screen transition-all duration-300 ease-in-out"
         style={{
           marginLeft: typeof window !== 'undefined' && window.innerWidth >= 1024
-            ? isCollapsed ? '5rem' : '16rem'
+            ? isCollapsed ? '72px' : '260px'
             : '0',
         }}
       >
@@ -72,10 +67,10 @@ export default function DashboardLayout() {
         </main>
 
         {/* Footer */}
-        <footer className="flex-shrink-0 px-6 py-4 border-t border-surface-200 bg-white/50">
+        <footer className="flex-shrink-0 px-6 py-4 border-t border-surface-200/60 bg-white/60">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
             <p>&copy; {new Date().getFullYear()} Jenovate Verification System. All rights reserved.</p>
-            <p>v1.0.0</p>
+            <p className="text-gray-300">v1.0.0</p>
           </div>
         </footer>
       </div>
