@@ -636,5 +636,95 @@ router.get(
   }
 );
 
+// PUT /api/students/:id - Admin only. Update student record
+router.put(
+  '/:id',
+  roleCheck(['admin']),
+  async (req, res, next) => {
+    try {
+      const student = await Student.findByPk(req.params.id);
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          message: 'Student not found'
+        });
+      }
+
+      const {
+        sNo, s_no,
+        remarks,
+        date,
+        academicRemarks, academic_remarks,
+        counselorName, counselor_name,
+        fullName, full_name,
+        phoneNo, phone_no, mobile,
+        whatsappNumber, whatsapp_number,
+        email,
+        collegeName, college_name,
+        state,
+        department,
+        courseOpted, course_opted,
+        primaryCourse, primary_course,
+        secondaryCourse, secondary_course,
+        tertiaryCourse, tertiary_course,
+        typeOfPack, type_of_pack,
+        monthOpted, month_opted,
+        typeOfCourse, type_of_course,
+        paymentMode, payment_mode,
+        programPrice, program_price,
+        amountReceived, amount_received,
+        pendingAmount, pending_amount,
+        revenueChannel, revenue_channel
+      } = req.body;
+
+      if (fullName !== undefined || full_name !== undefined) student.full_name = fullName || full_name;
+      if (sNo !== undefined || s_no !== undefined) student.s_no = sNo || s_no;
+      if (remarks !== undefined) student.remarks = remarks;
+      if (date !== undefined) student.date = date;
+      if (academicRemarks !== undefined || academic_remarks !== undefined) student.academic_remarks = academicRemarks || academic_remarks;
+      if (counselorName !== undefined || counselor_name !== undefined) student.counselor_name = counselorName || counselor_name;
+      if (phoneNo !== undefined || phone_no !== undefined || mobile !== undefined) student.phone_no = phoneNo || phone_no || mobile;
+      if (whatsappNumber !== undefined || whatsapp_number !== undefined) student.whatsapp_number = whatsappNumber || whatsapp_number;
+      if (email !== undefined) student.email = email;
+      if (collegeName !== undefined || college_name !== undefined) student.college_name = collegeName || college_name;
+      if (state !== undefined) student.state = state;
+      if (department !== undefined) student.department = department;
+      if (courseOpted !== undefined || course_opted !== undefined) student.course_opted = courseOpted || course_opted;
+      if (primaryCourse !== undefined || primary_course !== undefined) student.primary_course = primaryCourse || primary_course;
+      if (secondaryCourse !== undefined || secondary_course !== undefined) student.secondary_course = secondaryCourse || secondary_course;
+      if (tertiaryCourse !== undefined || tertiary_course !== undefined) student.tertiary_course = tertiaryCourse || tertiary_course;
+      if (typeOfPack !== undefined || type_of_pack !== undefined) student.type_of_pack = typeOfPack || type_of_pack;
+      if (monthOpted !== undefined || month_opted !== undefined) student.month_opted = monthOpted || month_opted;
+      if (typeOfCourse !== undefined || type_of_course !== undefined) student.type_of_course = typeOfCourse || type_of_course;
+      if (paymentMode !== undefined || payment_mode !== undefined) student.payment_mode = paymentMode || payment_mode;
+      if (revenueChannel !== undefined || revenue_channel !== undefined) student.revenue_channel = revenueChannel || revenue_channel;
+
+      const pPrice = programPrice !== undefined ? parseFloat(programPrice) : (program_price !== undefined ? parseFloat(program_price) : student.program_price);
+      const aRec = amountReceived !== undefined ? parseFloat(amountReceived) : (amount_received !== undefined ? parseFloat(amount_received) : student.amount_received);
+      let pEnd = pendingAmount !== undefined ? parseFloat(pendingAmount) : (pending_amount !== undefined ? parseFloat(pending_amount) : student.pending_amount);
+
+      if (programPrice !== undefined || amountReceived !== undefined || program_price !== undefined || amount_received !== undefined) {
+        if (pendingAmount === undefined && pending_amount === undefined) {
+          pEnd = Math.max(0, (pPrice || 0) - (aRec || 0));
+        }
+      }
+
+      student.program_price = pPrice;
+      student.amount_received = aRec;
+      student.pending_amount = pEnd;
+
+      await student.save();
+
+      return res.json({
+        success: true,
+        message: 'Student details updated successfully',
+        data: { student }
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 module.exports = router;
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 import Card from '../components/ui/Card';
 import Table from '../components/ui/Table';
@@ -8,11 +9,15 @@ import Badge from '../components/ui/Badge';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
 import Skeleton from '../components/ui/Skeleton';
+import StateSearchableSelect from '../components/forms/StateSearchableSelect';
 
 import {
   HiMagnifyingGlass, HiFunnel, HiArrowDownTray,
-  HiEye, HiSparkles, HiMapPin, HiBanknotes, HiExclamationCircle, HiCheckCircle
+  HiEye, HiSparkles, HiMapPin, HiBanknotes, HiExclamationCircle, HiCheckCircle,
+  HiPencilSquare, HiDocumentCheck
 } from 'react-icons/hi2';
+
+import { useSearchParams } from 'react-router-dom';
 
 const COURSE_OPTIONS = [
   { value: 'java_fullstack', label: 'Java Full Stack' },
@@ -38,9 +43,9 @@ const POPULAR_STATES = [
   'Punjab'
 ];
 
-import { useSearchParams } from 'react-router-dom';
-
 export default function StudentsListPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
   const [searchParams, setSearchParams] = useSearchParams();
   const [students, setStudents] = useState([]);
   const [verMap, setVerMap] = useState(new Map());
@@ -50,7 +55,7 @@ export default function StudentsListPage() {
   const [search, setSearch] = useState(searchParams.get('search') || '');
   const [course, setCourse] = useState(searchParams.get('course') || '');
   const [stateFilter, setStateFilter] = useState(searchParams.get('state') || '');
-  const [paymentStatus, setPaymentStatus] = useState(searchParams.get('paymentStatus') || ''); // 'pending', 'paid', ''
+  const [paymentStatus, setPaymentStatus] = useState(searchParams.get('paymentStatus') || '');
   const [counselor, setCounselor] = useState(searchParams.get('counselor') || '');
   const [department, setDepartment] = useState(searchParams.get('department') || '');
   const [dateFrom, setDateFrom] = useState(searchParams.get('dateFrom') || '');
@@ -59,9 +64,14 @@ export default function StudentsListPage() {
   // Summary calculations for filtered items
   const [filteredSummary, setFilteredSummary] = useState({ totalCount: 0, totalPending: 0, totalReceived: 0 });
 
-  // Modal state for student details
+  // Modal state for student details & editing
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Edit Modal State
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editFormData, setEditFormData] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
 
   // Pagination
   const [page, setPage] = useState(1);
@@ -168,6 +178,73 @@ export default function StudentsListPage() {
     }
   };
 
+  const openEditModal = (st) => {
+    setSelectedStudent(st);
+    setEditFormData({
+      fullName: st.full_name || '',
+      counselorName: st.counselor_name || '',
+      phoneNo: st.phone_no || st.mobile || '',
+      whatsappNumber: st.whatsapp_number || '',
+      email: st.email || '',
+      date: st.date || '',
+      remarks: st.remarks || '',
+      academicRemarks: st.academic_remarks || '',
+      collegeName: st.college_name || '',
+      state: st.state || '',
+      department: st.department || '',
+      courseOpted: st.course_opted || st.course_name || '',
+      primaryCourse: st.primary_course || '',
+      secondaryCourse: st.secondary_course || '',
+      tertiaryCourse: st.tertiary_course || '',
+      typeOfPack: st.type_of_pack || '',
+      monthOpted: st.month_opted || '',
+      typeOfCourse: st.type_of_course || '',
+      paymentMode: st.payment_mode || '',
+      revenueChannel: st.revenue_channel || '',
+      programPrice: st.program_price ?? 0,
+      amountReceived: st.amount_received ?? st.payment_amount ?? 0,
+      pendingAmount: st.pending_amount ?? 0
+    });
+    setShowDetailsModal(false);
+    setShowEditModal(true);
+  };
+
+  const handleEditChange = (field, value) => {
+    setEditFormData((prev) => {
+      const updated = { ...prev, [field]: value };
+      if (field === 'programPrice' || field === 'amountReceived') {
+        const price = parseFloat(field === 'programPrice' ? value : prev.programPrice) || 0;
+        const received = parseFloat(field === 'amountReceived' ? value : prev.amountReceived) || 0;
+        updated.pendingAmount = Math.max(0, price - received);
+      }
+      return updated;
+    });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAdmin) {
+      toast.error('Only administrators can edit student records.');
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const res = await api.put(`/students/${selectedStudent.id}`, editFormData);
+      if (res.data.success) {
+        toast.success('Student record updated successfully!');
+        setShowEditModal(false);
+        fetchStudents();
+      } else {
+        toast.error(res.data.message || 'Update failed');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message || 'Failed to update student details.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const formatCurrency = (val) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -191,7 +268,7 @@ export default function StudentsListPage() {
             Registered Students Directory
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            Deep filter students by state (e.g. Maharashtra), pending fee status, course, and date.
+            Filter, inspect, and update student profiles directly from the admin panel.
           </p>
         </div>
 
@@ -243,18 +320,12 @@ export default function StudentsListPage() {
               <div className="relative">
                 <input
                   type="text"
-                  list="states-list"
                   placeholder="e.g. Maharashtra"
                   className="form-input text-xs pl-8"
                   value={stateFilter}
                   onChange={(e) => setStateFilter(e.target.value)}
                 />
                 <HiMapPin className="absolute left-2.5 top-3 w-4 h-4 text-rose-500" />
-                <datalist id="states-list">
-                  {POPULAR_STATES.map((s) => (
-                    <option key={s} value={s} />
-                  ))}
-                </datalist>
               </div>
             </div>
 
@@ -439,17 +510,27 @@ export default function StudentsListPage() {
                     )}
                   </div>,
                   <div key={`ver-${st.id}`}>{getStatusBadge(st.reference_id)}</div>,
-                  <Button
-                    key={`act-${st.id}`}
-                    variant="ghost"
-                    className="flex items-center gap-1 text-primary-600 hover:text-primary-800 py-1 px-2 text-xs"
-                    onClick={() => {
-                      setSelectedStudent(st);
-                      setShowDetailsModal(true);
-                    }}
-                  >
-                    <HiEye className="w-4 h-4" /> Details
-                  </Button>
+                  <div className="flex items-center gap-1" key={`act-${st.id}`}>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center gap-1 text-primary-600 hover:text-primary-800 py-1 px-2 text-xs"
+                      onClick={() => {
+                        setSelectedStudent(st);
+                        setShowDetailsModal(true);
+                      }}
+                    >
+                      <HiEye className="w-3.5 h-3.5" /> Details
+                    </Button>
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        className="flex items-center gap-1 text-ocean-600 hover:text-ocean-800 py-1 px-2 text-xs font-bold"
+                        onClick={() => openEditModal(st)}
+                      >
+                        <HiPencilSquare className="w-3.5 h-3.5 text-ocean-600" /> Edit
+                      </Button>
+                    )}
+                  </div>
                 ];
               })}
             />
@@ -626,12 +707,321 @@ export default function StudentsListPage() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-gray-200">
-              <Button variant="primary" onClick={() => setShowDetailsModal(false)}>
+            <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+              <div>
+                {isAdmin && (
+                  <Button
+                    variant="primary"
+                    className="flex items-center gap-1.5 bg-ocean-600 hover:bg-ocean-700 text-xs py-2"
+                    onClick={() => openEditModal(selectedStudent)}
+                  >
+                    <HiPencilSquare className="w-4 h-4" /> Edit Student Details
+                  </Button>
+                )}
+              </div>
+              <Button variant="ghost" onClick={() => setShowDetailsModal(false)}>
                 Close Details
               </Button>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Edit Student Modal (Admin Only) */}
+      {showEditModal && selectedStudent && isAdmin && (
+        <Modal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          title={`Edit Student: ${selectedStudent.reference_id} (${selectedStudent.full_name})`}
+          size="lg"
+        >
+          <form onSubmit={handleEditSubmit} className="space-y-6">
+            {/* Section 1: General & Contact Info */}
+            <div className="space-y-4 bg-surface-50/60 p-4 rounded-xl border border-surface-200">
+              <h4 className="text-xs font-bold text-ocean-950 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-surface-200">
+                <HiPencilSquare className="w-4 h-4 text-ocean-600" /> General & Contact Info
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Full Student Name *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.fullName || ''}
+                    onChange={(e) => handleEditChange('fullName', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Counselor Name *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.counselorName || ''}
+                    onChange={(e) => handleEditChange('counselorName', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Phone Number (10 Digits) *</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={10}
+                    className="form-input"
+                    value={editFormData.phoneNo || ''}
+                    onChange={(e) => handleEditChange('phoneNo', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">WhatsApp Number (10 Digits) *</label>
+                  <input
+                    type="text"
+                    required
+                    maxLength={10}
+                    className="form-input"
+                    value={editFormData.whatsappNumber || ''}
+                    onChange={(e) => handleEditChange('whatsappNumber', e.target.value.replace(/\D/g, '').slice(0, 10))}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Email Address *</label>
+                  <input
+                    type="email"
+                    required
+                    className="form-input"
+                    value={editFormData.email || ''}
+                    onChange={(e) => handleEditChange('email', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Registration Date *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.date || ''}
+                    onChange={(e) => handleEditChange('date', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Status Remarks *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.remarks || ''}
+                    onChange={(e) => handleEditChange('remarks', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Academic Remarks *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.academicRemarks || ''}
+                    onChange={(e) => handleEditChange('academicRemarks', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Institution & Academic Details */}
+            <div className="space-y-4 bg-surface-50/60 p-4 rounded-xl border border-surface-200">
+              <h4 className="text-xs font-bold text-ocean-950 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-surface-200">
+                <HiSparkles className="w-4 h-4 text-violet-600" /> Institution & Academic Details
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">College Name *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.collegeName || ''}
+                    onChange={(e) => handleEditChange('collegeName', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <StateSearchableSelect
+                    id="edit-student-state"
+                    label="State / Region"
+                    required={true}
+                    value={editFormData.state || ''}
+                    onChange={(val) => handleEditChange('state', val)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Department *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.department || ''}
+                    onChange={(e) => handleEditChange('department', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Course Opted (Combined) *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.courseOpted || ''}
+                    onChange={(e) => handleEditChange('courseOpted', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Type of Pack *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.typeOfPack || ''}
+                    onChange={(e) => handleEditChange('typeOfPack', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Primary Course *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.primaryCourse || ''}
+                    onChange={(e) => handleEditChange('primaryCourse', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Secondary Course</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={editFormData.secondaryCourse || ''}
+                    onChange={(e) => handleEditChange('secondaryCourse', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Tertiary Course</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={editFormData.tertiaryCourse || ''}
+                    onChange={(e) => handleEditChange('tertiaryCourse', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section 3: Course Status & Financials */}
+            <div className="space-y-4 bg-surface-50/60 p-4 rounded-xl border border-surface-200">
+              <h4 className="text-xs font-bold text-ocean-950 uppercase tracking-wider flex items-center gap-1.5 pb-2 border-b border-surface-200">
+                💳 Course Status & Financial Dues
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Month Opted *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.monthOpted || ''}
+                    onChange={(e) => handleEditChange('monthOpted', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Type of Course *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.typeOfCourse || ''}
+                    onChange={(e) => handleEditChange('typeOfCourse', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Payment Mode</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={editFormData.paymentMode || ''}
+                    onChange={(e) => handleEditChange('paymentMode', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Revenue Channel</label>
+                  <input
+                    type="text"
+                    className="form-input"
+                    value={editFormData.revenueChannel || ''}
+                    onChange={(e) => handleEditChange('revenueChannel', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Program Price (₹) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    className="form-input font-bold"
+                    value={editFormData.programPrice ?? 0}
+                    onChange={(e) => handleEditChange('programPrice', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Amount Received (₹) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    className="form-input font-bold text-emerald-600"
+                    value={editFormData.amountReceived ?? 0}
+                    onChange={(e) => handleEditChange('amountReceived', e.target.value)}
+                  />
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Pending Amount (₹) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    className="form-input font-extrabold text-amber-700 bg-amber-50/50"
+                    value={editFormData.pendingAmount ?? 0}
+                    onChange={(e) => handleEditChange('pendingAmount', e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end items-center gap-3 pt-4 border-t border-gray-200">
+              <Button type="button" variant="ghost" onClick={() => setShowEditModal(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" variant="primary" loading={isSaving} className="flex items-center gap-1.5 px-6">
+                <HiDocumentCheck className="w-5 h-5" /> Save Changes
+              </Button>
+            </div>
+          </form>
         </Modal>
       )}
     </div>
