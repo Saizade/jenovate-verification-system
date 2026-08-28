@@ -18,8 +18,6 @@ export default function CourseSearchableSelect({
   const containerRef = useRef(null);
   const inputRef = useRef(null);
 
-  const datalistId = `${id}-datalist`;
-
   // Synchronize internal state with external value
   useEffect(() => {
     setSearchQuery(value || '');
@@ -37,27 +35,28 @@ export default function CourseSearchableSelect({
   }, []);
 
   // Filter courses based on user input
-  const filteredCourses = COURSE_LIST.filter((course) =>
-    course.toLowerCase().includes((searchQuery || '').toLowerCase())
-  );
+  const isExactSelected = value && searchQuery === value;
+  const filteredCourses = (searchQuery && !isExactSelected)
+    ? COURSE_LIST.filter((course) => course.toLowerCase().includes(searchQuery.toLowerCase()))
+    : COURSE_LIST;
 
   const handleSelect = (courseName) => {
     setSearchQuery(courseName);
-    onChange(courseName);
+    if (onChange) onChange(courseName);
     setIsOpen(false);
   };
 
   const handleInputChange = (e) => {
     const val = e.target.value;
     setSearchQuery(val);
-    onChange(val);
+    if (onChange) onChange(val);
     if (!isOpen) setIsOpen(true);
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
     setSearchQuery('');
-    onChange('');
+    if (onChange) onChange('');
     if (inputRef.current) {
       inputRef.current.focus();
     }
@@ -65,7 +64,7 @@ export default function CourseSearchableSelect({
   };
 
   return (
-    <div ref={containerRef} className={`relative w-full ${className}`}>
+    <div ref={containerRef} className={`relative w-full ${isOpen ? 'z-40' : 'z-10'} ${className}`}>
       {label && (
         <label htmlFor={id} className="block text-xs font-semibold text-gray-700 mb-1">
           {label} {required && <span className="text-red-500">*</span>}
@@ -82,7 +81,6 @@ export default function CourseSearchableSelect({
             }
             inputRef.current = e;
           }}
-          list={datalistId}
           type="text"
           value={searchQuery}
           onChange={(e) => {
@@ -95,25 +93,18 @@ export default function CourseSearchableSelect({
           onClick={() => setIsOpen(true)}
           placeholder={placeholder}
           autoComplete="off"
-          className={`form-input pr-14 bg-white text-sm transition-all shadow-sm ${
+          className={`w-full px-4 py-3 bg-white border rounded-xl text-sm font-medium text-ocean-950 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ocean-500/20 focus:border-ocean-500 pr-14 shadow-sm ${
             error ? 'border-red-300 focus:ring-red-200 focus:border-red-400' : 'border-gray-300 focus:border-primary-500'
           }`}
         />
 
-        {/* HTML5 Datalist Fallback */}
-        <datalist id={datalistId}>
-          {COURSE_LIST.map((course) => (
-            <option key={course} value={course} />
-          ))}
-        </datalist>
-
         {/* Action icons (Clear & Dropdown arrow) */}
-        <div className="absolute inset-y-0 right-0 flex items-center pr-2 space-x-1">
+        <div className="absolute inset-y-0 right-0 flex items-center pr-2 space-x-1 z-10">
           {searchQuery && (
             <button
               type="button"
               onClick={handleClear}
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-gray-100 transition-colors"
               title="Clear course selection"
             >
               <HiXMark className="w-4 h-4" />
@@ -133,16 +124,16 @@ export default function CourseSearchableSelect({
 
       {error && <p className="form-error text-xs mt-1 text-red-500">{error}</p>}
 
-      {/* Interactive Dropdown Menu overlay */}
+      {/* Solid Opaque Interactive Dropdown Menu Overlay */}
       {isOpen && (
-        <div className="absolute z-50 mt-1 w-full bg-white rounded-xl shadow-xl border border-gray-200 max-h-60 overflow-y-auto py-1 animate-in fade-in slide-in-from-top-2 duration-150 scrollbar-thin">
-          <div className="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider bg-gray-50/90 border-b border-gray-100 flex justify-between items-center sticky top-0 backdrop-blur-sm z-10">
+        <div className="absolute z-[100] mt-1 w-full bg-white rounded-xl shadow-2xl border border-gray-200 max-h-60 overflow-y-auto py-1 scrollbar-thin divide-y divide-gray-100">
+          <div className="px-3 py-2 text-[11px] font-bold text-gray-500 uppercase tracking-wider bg-surface-100 border-b border-gray-200 flex justify-between items-center sticky top-0 z-20">
             <span>Course Options ({filteredCourses.length})</span>
             <span className="text-[10px] text-primary-600 font-normal">Click or search</span>
           </div>
 
           {filteredCourses.length === 0 ? (
-            <div className="px-4 py-3 text-xs text-gray-500 text-center italic">
+            <div className="px-4 py-3 text-xs text-gray-500 text-center italic bg-white">
               No matching courses found. You can still type custom course name.
             </div>
           ) : (
@@ -156,8 +147,8 @@ export default function CourseSearchableSelect({
                     e.preventDefault(); // Prevent input blur before select
                     handleSelect(course);
                   }}
-                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between hover:bg-primary-50/80 hover:text-primary-950 transition-colors ${
-                    isSelected ? 'bg-primary-50 font-bold text-primary-950' : 'text-gray-700 font-medium'
+                  className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between transition-colors bg-white ${
+                    isSelected ? 'bg-primary-50 font-bold text-primary-950' : 'text-gray-700 font-medium hover:bg-primary-50/80 hover:text-primary-950'
                   }`}
                 >
                   <span className="truncate">{course}</span>

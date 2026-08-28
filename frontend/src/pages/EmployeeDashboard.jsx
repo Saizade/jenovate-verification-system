@@ -251,15 +251,26 @@ export default function EmployeeDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label htmlFor="emp-whatsapp" className="form-label text-xs font-semibold uppercase text-gray-500">
-                  WhatsApp No
+                  WhatsApp No. (10 Digits)
                 </label>
                 <input
                   id="emp-whatsapp"
-                  type="tel"
-                  placeholder="9876543210"
-                  className="form-input mt-1"
-                  {...register('whatsappNo')}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={10}
+                  placeholder="10-digit number"
+                  onInput={(e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  }}
+                  className={`form-input mt-1 ${errors.whatsappNo ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500 bg-red-50/10' : ''}`}
+                  {...register('whatsappNo', {
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: 'Must be exactly 10 digits'
+                    }
+                  })}
                 />
+                {errors.whatsappNo && <p className="form-error text-xs mt-1 text-red-500">{errors.whatsappNo.message}</p>}
               </div>
               <div>
                 <label htmlFor="emp-email" className="form-label text-xs font-semibold uppercase text-gray-500">

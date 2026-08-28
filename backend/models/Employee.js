@@ -55,13 +55,24 @@ const Employee = sequelize.define('Employee', {
   tableName: 'employees',
   timestamps: false,
   hooks: {
+    beforeValidate: (employee) => {
+      if (employee.email) {
+        employee.email = employee.email.trim().toLowerCase();
+      }
+    },
     beforeCreate: async (employee) => {
+      if (employee.email) {
+        employee.email = employee.email.trim().toLowerCase();
+      }
       if (employee.password) {
         const salt = await bcrypt.genSalt(10);
         employee.password = await bcrypt.hash(employee.password, salt);
       }
     },
     beforeUpdate: async (employee) => {
+      if (employee.email) {
+        employee.email = employee.email.trim().toLowerCase();
+      }
       if (employee.changed('password')) {
         const salt = await bcrypt.genSalt(10);
         employee.password = await bcrypt.hash(employee.password, salt);

@@ -3,7 +3,7 @@ const { Employee } = require('../models');
 const seedAdmin = async () => {
   try {
     // 1. Seed Admin
-    const adminExists = await Employee.findOne({ where: { role: 'admin' } });
+    const adminExists = await Employee.findOne({ where: { email: 'admin@jenovate.com' } });
     if (!adminExists) {
       await Employee.create({
         name: 'Admin User',

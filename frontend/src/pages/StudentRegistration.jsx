@@ -64,19 +64,30 @@ export default function StudentRegistration() {
   const nextStep = async () => {
     let fieldsToValidate = [];
     if (currentStep === 0) {
-      fieldsToValidate = ['fullName'];
+      fieldsToValidate = [
+        'date',
+        'counselorName',
+        'fullName',
+        'phoneNo',
+        'whatsappNumber',
+        'email',
+        'remarks',
+        'academicRemarks'
+      ];
     } else if (currentStep === 1) {
       const num = parseInt(watch('numCoursesSelected') || '1', 10);
-      fieldsToValidate = ['numCoursesSelected', 'primaryCourse'];
+      fieldsToValidate = ['collegeName', 'state', 'department', 'numCoursesSelected', 'primaryCourse'];
       if (num >= 2) fieldsToValidate.push('secondaryCourse');
       if (num >= 3) fieldsToValidate.push('tertiaryCourse');
+    } else if (currentStep === 2) {
+      fieldsToValidate = ['monthOpted', 'typeOfCourse', 'programPrice', 'amountReceived', 'pendingAmount'];
     }
 
     const isValid = await trigger(fieldsToValidate);
     if (isValid) {
       setCurrentStep((prev) => prev + 1);
     } else {
-      toast.error('Please fix required validation errors before proceeding.');
+      toast.error('Please complete all compulsory fields correctly before proceeding.');
     }
   };
 
