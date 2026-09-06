@@ -2,22 +2,18 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   HiBars3,
-  HiMagnifyingGlass,
-  HiBell,
   HiOutlineUser,
   HiOutlineArrowRightOnRectangle,
   HiChevronRight,
-  HiXMark,
 } from 'react-icons/hi2';
 import { useAuth } from '../../context/AuthContext';
-import { useNotifications } from '../../context/NotificationContext';
 import Modal from '../ui/Modal';
 import Badge from '../ui/Badge';
 
 const pageTitles = {
   '/admin/dashboard': 'Dashboard',
   '/admin/students': 'Students',
-  '/admin/data': 'Data',
+  '/admin/data': 'All Mentee Data',
   '/admin/batches': 'Batches',
   '/admin/submissions': 'Employee Entries',
   '/admin/fraud-reports': 'Fraud Reports',
@@ -45,13 +41,10 @@ function getBreadcrumb(pathname) {
 
 export default function Header({ onMenuClick }) {
   const { user, logout } = useAuth();
-  const { unreadCount } = useNotifications();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -118,48 +111,6 @@ export default function Header({ onMenuClick }) {
 
         {/* Right Section */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Search input */}
-          <div
-            className={`
-              relative hidden sm:flex items-center transition-all duration-200
-              ${isSearchFocused ? 'w-60' : 'w-44'}
-            `}
-          >
-            <HiMagnifyingGlass className="absolute left-3 w-4 h-4 text-gray-400 pointer-events-none" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setIsSearchFocused(true)}
-              onBlur={() => setIsSearchFocused(false)}
-              className="w-full pl-9 pr-4 py-2 bg-surface-50 border border-surface-200 rounded-lg text-sm text-ocean-950 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-100 focus:border-ocean-400 focus:bg-white transition-all duration-200"
-              id="header-search-input"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery('')}
-                className="absolute right-3 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <HiXMark className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
-          {/* Notification bell */}
-          <button
-            className="relative p-2 rounded-lg text-gray-500 hover:text-ocean-950 hover:bg-surface-100 transition-colors duration-150"
-            id="notification-bell"
-            title="Notifications"
-          >
-            <HiBell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center min-w-[16px] h-[16px] px-1 bg-red-500 text-white text-[9px] font-bold rounded-full ring-2 ring-white">
-                {unreadCount > 99 ? '99+' : unreadCount}
-              </span>
-            )}
-          </button>
-
           {/* User avatar dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button

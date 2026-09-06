@@ -23,7 +23,7 @@ import toast from 'react-hot-toast';
 const adminNavItems = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: HiOutlineHome },
   { label: 'Students', path: '/admin/students', icon: HiOutlineUsers },
-  { label: 'Data', path: '/admin/data', icon: HiOutlineCircleStack },
+  { label: 'All Mentee Data', path: '/admin/data', icon: HiOutlineCircleStack },
   { label: 'Batches', path: '/admin/batches', icon: HiOutlineAcademicCap },
   { label: 'Employee Entries', path: '/admin/submissions', icon: HiOutlineClipboardDocumentList },
   { label: 'Fraud Reports', path: '/admin/fraud-reports', icon: HiOutlineExclamationTriangle },

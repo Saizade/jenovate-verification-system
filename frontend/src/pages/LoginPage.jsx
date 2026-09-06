@@ -55,11 +55,6 @@ export default function LoginPage() {
     }
   };
 
-  const fillDemoAccount = (email, password) => {
-    setValue('email', email, { shouldValidate: true });
-    setValue('password', password, { shouldValidate: true });
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-ocean-950 via-ocean-900 to-ocean-950">
       {/* Subtle ocean decorative blurred circles */}
@@ -172,27 +167,6 @@ export default function LoginPage() {
                   {errors.password.message}
                 </p>
               )}
-            </div>
-
-            {/* Quick Demo Login Credentials */}
-            <div className="pt-2">
-              <p className="text-xs font-medium text-gray-400 mb-2">Quick Demo Account Fill:</p>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('admin@jenovate.com', 'Admin@123')}
-                  className="py-2 px-3 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-xl text-xs text-ocean-200 font-semibold transition-all text-center"
-                >
-                  Admin Demo
-                </button>
-                <button
-                  type="button"
-                  onClick={() => fillDemoAccount('employee@jenovate.com', 'Employee@123')}
-                  className="py-2 px-3 bg-white/[0.06] hover:bg-white/[0.12] border border-white/10 rounded-xl text-xs text-emerald-300 font-semibold transition-all text-center"
-                >
-                  Employee Demo
-                </button>
-              </div>
             </div>
 
             {/* Login Button */}
