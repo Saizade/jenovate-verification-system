@@ -50,6 +50,14 @@ const Employee = sequelize.define('Employee', {
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW
+  },
+  reset_code: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  reset_code_expires: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   tableName: 'employees',

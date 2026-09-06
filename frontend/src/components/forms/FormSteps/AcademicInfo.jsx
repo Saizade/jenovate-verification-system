@@ -1,5 +1,4 @@
-import { useEffect } from 'react';
-import { HiAcademicCap, HiBuildingLibrary, HiBookOpen, HiHashtag } from 'react-icons/hi2';
+import { HiAcademicCap, HiBuildingLibrary, HiBookOpen, HiHashtag, HiCurrencyRupee } from 'react-icons/hi2';
 import CourseSearchableSelect from '../CourseSearchableSelect';
 import StateSearchableSelect from '../StateSearchableSelect';
 
@@ -37,11 +36,11 @@ export default function AcademicInfo({ register, errors, watch, setValue }) {
           Institution & Academic Details
         </h3>
         <p className="text-xs text-gray-500 mt-1">
-          Specify college, state, department, and course details. All fields are compulsory.
+          Specify college, annual fees, state, department, and course details. All fields are compulsory.
         </p>
       </div>
 
-      {/* College Name and State */}
+      {/* College Name and Per Year College Fees */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
           <label htmlFor="reg-college-name" className="block text-xs font-semibold uppercase text-gray-600 mb-1.5 tracking-wider">
@@ -72,6 +71,39 @@ export default function AcademicInfo({ register, errors, watch, setValue }) {
         </div>
 
         <div>
+          <label htmlFor="reg-per-year-fees" className="block text-xs font-semibold uppercase text-gray-600 mb-1.5 tracking-wider">
+            Per Year College Fees (₹) <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <HiCurrencyRupee className="w-4.5 h-4.5 text-ocean-600" />
+            </div>
+            <input
+              id="reg-per-year-fees"
+              type="number"
+              min="0"
+              placeholder="e.g. 75000"
+              className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-sm font-medium text-ocean-950 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ocean-500/20 focus:border-ocean-500 ${
+                errors.perYearCollegeFees ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500 bg-red-50/10' : 'border-surface-200 hover:border-ocean-300'
+              }`}
+              {...register('perYearCollegeFees', {
+                required: 'Per year college fees is required',
+                min: { value: 0, message: 'Fees cannot be negative' }
+              })}
+            />
+          </div>
+          {errors.perYearCollegeFees && (
+            <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+              {errors.perYearCollegeFees.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* State & Department */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
           <StateSearchableSelect
             id="reg-state"
             label="State"
@@ -85,10 +117,7 @@ export default function AcademicInfo({ register, errors, watch, setValue }) {
             })}
           />
         </div>
-      </div>
 
-      {/* Department & Number of Courses Selected */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>
           <label htmlFor="reg-department" className="block text-xs font-semibold uppercase text-gray-600 mb-1.5 tracking-wider">
             Department <span className="text-red-500">*</span>

@@ -38,6 +38,9 @@ export default function ReviewSubmit({ watch }) {
     { label: 'Academic Remarks', value: data.academicRemarks },
     { label: 'Counselor Name', value: data.counselorName },
     { label: 'Student Name', value: data.fullName },
+    { label: 'Gender', value: data.gender },
+    { label: 'Mobile (Android/iOS)', value: data.mobileOs },
+    { label: 'Parent Occupation', value: data.parentOccupation },
     { label: 'Phone No.', value: data.phoneNo },
     { label: 'WhatsApp Number', value: data.whatsappNumber },
     { label: 'E-mail', value: data.email },
@@ -45,6 +48,7 @@ export default function ReviewSubmit({ watch }) {
 
   const academicItems = [
     { label: 'College Name', value: data.collegeName },
+    { label: 'Per Year College Fees', value: formatCurrency(data.perYearCollegeFees) },
     { label: 'State', value: data.state },
     { label: 'Department', value: data.department },
     { label: 'No. of Courses Selected', value: `${data.numCoursesSelected || 1} (${data.typeOfPack || 'Single Course'})` },

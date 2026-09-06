@@ -127,7 +127,11 @@ const exportStudentsExcel = async (students) => {
     { header: 'Program Price', key: 'program_price', width: 15 },
     { header: 'Amount Received', key: 'amount_received', width: 16 },
     { header: 'Pending Amount', key: 'pending_amount', width: 16 },
-    { header: 'Revenue Channel', key: 'revenue_channel', width: 20 }
+    { header: 'Revenue Channel', key: 'revenue_channel', width: 20 },
+    { header: 'Gender', key: 'gender', width: 14 },
+    { header: 'Mobile (Android/iOS)', key: 'mobile_os', width: 20 },
+    { header: 'Parent Occupation', key: 'parent_occupation', width: 22 },
+    { header: 'Per Year College Fees', key: 'per_year_college_fees', width: 22 }
   ];
 
   // Style header row
@@ -180,7 +184,11 @@ const exportStudentsExcel = async (students) => {
         program_price: parseFloat(student.program_price || 0),
         amount_received: parseFloat(student.amount_received || student.payment_amount || 0),
         pending_amount: parseFloat(student.pending_amount || 0),
-        revenue_channel: student.revenue_channel || ''
+        revenue_channel: student.revenue_channel || '',
+        gender: student.gender || '',
+        mobile_os: student.mobile_os || '',
+        parent_occupation: student.parent_occupation || '',
+        per_year_college_fees: student.per_year_college_fees !== null && student.per_year_college_fees !== undefined ? parseFloat(student.per_year_college_fees) : ''
       });
     });
   }

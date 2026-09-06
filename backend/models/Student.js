@@ -91,6 +91,18 @@ const Student = sequelize.define('Student', {
   revenue_channel: {
     type: DataTypes.STRING
   },
+  gender: {
+    type: DataTypes.STRING
+  },
+  mobile_os: {
+    type: DataTypes.STRING
+  },
+  parent_occupation: {
+    type: DataTypes.STRING
+  },
+  per_year_college_fees: {
+    type: DataTypes.DECIMAL(10, 2)
+  },
   // Backward compatibility getters for verification & dashboard helpers
   course_name: {
     type: DataTypes.VIRTUAL,

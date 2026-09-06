@@ -86,6 +86,10 @@ router.post(
         amount_received: amountReceived,
         pending_amount: pendingAmount,
         revenue_channel: req.body.revenueChannel || req.body.revenue_channel || null,
+        gender: req.body.gender || null,
+        mobile_os: req.body.mobileOs || req.body.mobile_os || req.body.mobile || null,
+        parent_occupation: req.body.parentOccupation || req.body.parent_occupation || null,
+        per_year_college_fees: req.body.perYearCollegeFees !== undefined && req.body.perYearCollegeFees !== '' ? parseFloat(req.body.perYearCollegeFees) : (req.body.per_year_college_fees !== undefined && req.body.per_year_college_fees !== '' ? parseFloat(req.body.per_year_college_fees) : null),
         documents,
         is_locked: true,
         submitted_by: req.user ? req.user.id : null
@@ -394,6 +398,10 @@ router.post(
         amountReceived: ['amountreceived', 'receivedamount', 'received', 'feespaid', 'amountpaid', 'paidamount'],
         pendingAmount: ['pendingamount', 'pending', 'dues', 'balance', 'pendingdues'],
         revenueChannel: ['revenuechannel', 'channel', 'source'],
+        gender: ['gender', 'sex', 'malefemale', 'male/female'],
+        mobileOs: ['mobileos', 'mobiledevice', 'devicetype', 'os', 'androidios', 'android/ios'],
+        parentOccupation: ['parentoccupation', 'parentsoccupation', 'fatheroccupation', 'occupation'],
+        perYearCollegeFees: ['peryearcollegefees', 'peryearfees', 'collegefees', 'annualfees', 'yearlyfees', 'peryearcollegefee'],
         refId: ['referenceid', 'refid', 'reference']
       };
 
@@ -476,6 +484,11 @@ router.post(
         let pendingAmount = rawPending ? parseMoney(rawPending) : Math.max(0, programPrice - amountReceived);
 
         const revenueChannel = getValByField(row, FIELD_ALIASES.revenueChannel) || null;
+        const gender = getValByField(row, FIELD_ALIASES.gender) || null;
+        const mobileOs = getValByField(row, FIELD_ALIASES.mobileOs) || null;
+        const parentOccupation = getValByField(row, FIELD_ALIASES.parentOccupation) || null;
+        const rawCollegeFees = getValByField(row, FIELD_ALIASES.perYearCollegeFees);
+        const perYearCollegeFees = rawCollegeFees ? parseMoney(rawCollegeFees) : null;
 
         let refId = getValByField(row, FIELD_ALIASES.refId) || null;
         if (!refId || !refId.startsWith('JNV-')) {
@@ -509,6 +522,10 @@ router.post(
             amount_received: amountReceived,
             pending_amount: pendingAmount,
             revenue_channel: revenueChannel,
+            gender,
+            mobile_os: mobileOs,
+            parent_occupation: parentOccupation,
+            per_year_college_fees: perYearCollegeFees,
             documents: {},
             is_locked: true,
             submitted_by: req.user.id
@@ -584,6 +601,10 @@ router.get(
         { header: 'Amount Received', key: 'amount_received', width: 16 },
         { header: 'Pending Amount', key: 'pending_amount', width: 16 },
         { header: 'Revenue Channel', key: 'revenue_channel', width: 20 },
+        { header: 'Gender', key: 'gender', width: 14 },
+        { header: 'Mobile (Android/iOS)', key: 'mobile_os', width: 20 },
+        { header: 'Parent Occupation', key: 'parent_occupation', width: 22 },
+        { header: 'Per Year College Fees', key: 'per_year_college_fees', width: 22 },
         { header: 'Remarks', key: 'remarks', width: 20 },
         { header: 'Academic Remarks', key: 'academic_remarks', width: 22 }
       ];
@@ -621,6 +642,10 @@ router.get(
         amount_received: 10000,
         pending_amount: 5000,
         revenue_channel: 'Online Campaign',
+        gender: 'Male',
+        mobile_os: 'Android',
+        parent_occupation: 'Business',
+        per_year_college_fees: 75000,
         remarks: 'Batch A',
         academic_remarks: 'Good background'
       });
@@ -674,7 +699,11 @@ router.put(
         programPrice, program_price,
         amountReceived, amount_received,
         pendingAmount, pending_amount,
-        revenueChannel, revenue_channel
+        revenueChannel, revenue_channel,
+        gender,
+        mobileOs, mobile_os,
+        parentOccupation, parent_occupation,
+        perYearCollegeFees, per_year_college_fees
       } = req.body;
 
       if (fullName !== undefined || full_name !== undefined) student.full_name = fullName || full_name;
@@ -698,6 +727,13 @@ router.put(
       if (typeOfCourse !== undefined || type_of_course !== undefined) student.type_of_course = typeOfCourse || type_of_course;
       if (paymentMode !== undefined || payment_mode !== undefined) student.payment_mode = paymentMode || payment_mode;
       if (revenueChannel !== undefined || revenue_channel !== undefined) student.revenue_channel = revenueChannel || revenue_channel;
+      if (gender !== undefined) student.gender = gender;
+      if (mobileOs !== undefined || mobile_os !== undefined) student.mobile_os = mobileOs || mobile_os;
+      if (parentOccupation !== undefined || parent_occupation !== undefined) student.parent_occupation = parentOccupation || parent_occupation;
+      if (perYearCollegeFees !== undefined || per_year_college_fees !== undefined) {
+        const feeVal = perYearCollegeFees !== undefined ? perYearCollegeFees : per_year_college_fees;
+        student.per_year_college_fees = (feeVal !== '' && feeVal !== null && !isNaN(parseFloat(feeVal))) ? parseFloat(feeVal) : null;
+      }
 
       const pPrice = programPrice !== undefined ? parseFloat(programPrice) : (program_price !== undefined ? parseFloat(program_price) : student.program_price);
       const aRec = amountReceived !== undefined ? parseFloat(amountReceived) : (amount_received !== undefined ? parseFloat(amount_received) : student.amount_received);

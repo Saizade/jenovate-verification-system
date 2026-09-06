@@ -41,10 +41,14 @@ export default function StudentRegistration() {
       academicRemarks: '',
       counselorName: '',
       fullName: '',
+      gender: '',
+      mobileOs: '',
+      parentOccupation: '',
       phoneNo: '',
       whatsappNumber: '',
       email: '',
       collegeName: '',
+      perYearCollegeFees: '',
       state: '',
       department: '',
       numCoursesSelected: '1',
@@ -68,6 +72,9 @@ export default function StudentRegistration() {
         'date',
         'counselorName',
         'fullName',
+        'gender',
+        'mobileOs',
+        'parentOccupation',
         'phoneNo',
         'whatsappNumber',
         'email',
@@ -76,7 +83,7 @@ export default function StudentRegistration() {
       ];
     } else if (currentStep === 1) {
       const num = parseInt(watch('numCoursesSelected') || '1', 10);
-      fieldsToValidate = ['collegeName', 'state', 'department', 'numCoursesSelected', 'primaryCourse'];
+      fieldsToValidate = ['collegeName', 'perYearCollegeFees', 'state', 'department', 'numCoursesSelected', 'primaryCourse'];
       if (num >= 2) fieldsToValidate.push('secondaryCourse');
       if (num >= 3) fieldsToValidate.push('tertiaryCourse');
     } else if (currentStep === 2) {

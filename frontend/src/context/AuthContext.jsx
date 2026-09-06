@@ -38,9 +38,9 @@ export function AuthProvider({ children }) {
     validateToken();
   }, []);
 
-  const login = useCallback(async (email, password) => {
+  const login = useCallback(async (email, password, role) => {
     try {
-      const response = await api.post('/auth/login', { email, password });
+      const response = await api.post('/auth/login', { email, password, role });
       const { token: newToken, user: userData } = response.data.data || response.data;
 
       localStorage.setItem('jenovate_token', newToken);

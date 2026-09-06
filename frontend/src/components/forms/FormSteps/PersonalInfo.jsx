@@ -101,6 +101,110 @@ export default function PersonalInfo({ register, errors }) {
         </div>
       </div>
 
+      {/* Gender (Male/Female) and Mobile (Android/iOS) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div>
+          <label htmlFor="reg-gender" className="block text-xs font-semibold uppercase text-gray-600 mb-1.5 tracking-wider">
+            Gender (Male / Female) <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+              <HiUser className="w-4.5 h-4.5 text-ocean-600" />
+            </div>
+            <select
+              id="reg-gender"
+              className={`w-full pl-10 pr-10 py-3 bg-white border rounded-xl text-sm font-medium text-ocean-950 appearance-none cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ocean-500/20 focus:border-ocean-500 ${
+                errors.gender ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500 bg-red-50/10' : 'border-surface-200 hover:border-ocean-300'
+              }`}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%230e6ba8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 0.75rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.25em 1.25em'
+              }}
+              {...register('gender', {
+                required: 'Please select gender'
+              })}
+            >
+              <option value="">Select Gender...</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+            </select>
+          </div>
+          {errors.gender && (
+            <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+              {errors.gender.message}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="reg-mobile-os" className="block text-xs font-semibold uppercase text-gray-600 mb-1.5 tracking-wider">
+            Mobile (Android / iOS) <span className="text-red-500">*</span>
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+              <HiDevicePhoneMobile className="w-4.5 h-4.5 text-ocean-600" />
+            </div>
+            <select
+              id="reg-mobile-os"
+              className={`w-full pl-10 pr-10 py-3 bg-white border rounded-xl text-sm font-medium text-ocean-950 appearance-none cursor-pointer transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ocean-500/20 focus:border-ocean-500 ${
+                errors.mobileOs ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500 bg-red-50/10' : 'border-surface-200 hover:border-ocean-300'
+              }`}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%230e6ba8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                backgroundPosition: 'right 0.75rem center',
+                backgroundRepeat: 'no-repeat',
+                backgroundSize: '1.25em 1.25em'
+              }}
+              {...register('mobileOs', {
+                required: 'Please select mobile OS (Android or iOS)'
+              })}
+            >
+              <option value="">Select Android or iOS...</option>
+              <option value="Android">Android</option>
+              <option value="iOS">iOS</option>
+            </select>
+          </div>
+          {errors.mobileOs && (
+            <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+              {errors.mobileOs.message}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Parent Occupation */}
+      <div>
+        <label htmlFor="reg-parent-occupation" className="block text-xs font-semibold uppercase text-gray-600 mb-1.5 tracking-wider">
+          Parent Occupation <span className="text-red-500">*</span>
+        </label>
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+            <HiUser className="w-4.5 h-4.5 text-ocean-600" />
+          </div>
+          <input
+            id="reg-parent-occupation"
+            type="text"
+            placeholder="e.g. Business, Engineer, Doctor, Government Service"
+            className={`w-full pl-10 pr-4 py-3 bg-white border rounded-xl text-sm font-medium text-ocean-950 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ocean-500/20 focus:border-ocean-500 ${
+              errors.parentOccupation ? 'border-red-400 focus:ring-red-500/20 focus:border-red-500 bg-red-50/10' : 'border-surface-200 hover:border-ocean-300'
+            }`}
+            {...register('parentOccupation', {
+              required: 'Parent occupation is required'
+            })}
+          />
+        </div>
+        {errors.parentOccupation && (
+          <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+            <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+            {errors.parentOccupation.message}
+          </p>
+        )}
+      </div>
+
       {/* Phone No. and WhatsApp Number (Strictly 10 Digits) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div>

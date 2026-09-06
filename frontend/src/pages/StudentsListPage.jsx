@@ -201,6 +201,10 @@ export default function StudentsListPage() {
       typeOfCourse: st.type_of_course || '',
       paymentMode: st.payment_mode || '',
       revenueChannel: st.revenue_channel || '',
+      gender: st.gender || '',
+      mobileOs: st.mobile_os || '',
+      parentOccupation: st.parent_occupation || '',
+      perYearCollegeFees: st.per_year_college_fees ?? '',
       programPrice: st.program_price ?? 0,
       amountReceived: st.amount_received ?? st.payment_amount ?? 0,
       pendingAmount: st.pending_amount ?? 0
@@ -618,6 +622,18 @@ export default function StudentsListPage() {
                     <p className="font-semibold text-gray-800">{selectedStudent.email || '—'}</p>
                   </div>
                   <div>
+                    <span className="text-gray-400">Gender</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.gender || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Mobile (Android/iOS)</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.mobile_os || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Parent Occupation</span>
+                    <p className="font-semibold text-gray-800">{selectedStudent.parent_occupation || '—'}</p>
+                  </div>
+                  <div>
                     <span className="text-gray-400">Status Remarks</span>
                     <p className="font-semibold text-gray-800">{selectedStudent.remarks || '—'}</p>
                   </div>
@@ -637,6 +653,10 @@ export default function StudentsListPage() {
                   <div className="col-span-2">
                     <span className="text-gray-400">College Name</span>
                     <p className="font-semibold text-gray-800">{selectedStudent.college_name || '—'}</p>
+                  </div>
+                  <div>
+                    <span className="text-gray-400">Per Year College Fees</span>
+                    <p className="font-bold text-ocean-950">{selectedStudent.per_year_college_fees ? formatCurrency(selectedStudent.per_year_college_fees) : '—'}</p>
                   </div>
                   <div>
                     <span className="text-gray-400">State</span>
@@ -754,6 +774,45 @@ export default function StudentsListPage() {
                 </div>
 
                 <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Gender (Male/Female) *</label>
+                  <select
+                    required
+                    className="form-input"
+                    value={editFormData.gender || ''}
+                    onChange={(e) => handleEditChange('gender', e.target.value)}
+                  >
+                    <option value="">Select Gender...</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Mobile (Android / iOS) *</label>
+                  <select
+                    required
+                    className="form-input"
+                    value={editFormData.mobileOs || ''}
+                    onChange={(e) => handleEditChange('mobileOs', e.target.value)}
+                  >
+                    <option value="">Select Platform...</option>
+                    <option value="Android">Android</option>
+                    <option value="iOS">iOS</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Parent Occupation *</label>
+                  <input
+                    type="text"
+                    required
+                    className="form-input"
+                    value={editFormData.parentOccupation || ''}
+                    onChange={(e) => handleEditChange('parentOccupation', e.target.value)}
+                  />
+                </div>
+
+                <div>
                   <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Counselor Name *</label>
                   <input
                     type="text"
@@ -848,6 +907,18 @@ export default function StudentsListPage() {
                     className="form-input"
                     value={editFormData.collegeName || ''}
                     onChange={(e) => handleEditChange('collegeName', e.target.value)}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-gray-600 uppercase mb-1">Per Year College Fees (₹) *</label>
+                  <input
+                    type="number"
+                    min="0"
+                    required
+                    className="form-input font-semibold"
+                    value={editFormData.perYearCollegeFees ?? ''}
+                    onChange={(e) => handleEditChange('perYearCollegeFees', e.target.value)}
                   />
                 </div>
 
