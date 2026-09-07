@@ -81,8 +81,6 @@ export default function LoginPage() {
     }
   };
 
-<<<<<<< HEAD
-=======
   // Open Forgot Password Modal (Admin only)
   const openForgotPassword = () => {
     const currentEmail = watch('email') || '';
@@ -157,8 +155,6 @@ export default function LoginPage() {
       setIsResettingPass(false);
     }
   };
-
->>>>>>> 619da59 (changes done)
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-ocean-950 via-ocean-900 to-ocean-950">
       {/* Decorative blurred background circles */}
@@ -268,7 +264,6 @@ export default function LoginPage() {
                   id="login-email"
                   type="email"
                   autoComplete="email"
-                  placeholder={activeRole === 'admin' ? 'admin@jenovate.com' : 'employee@jenovate.com'}
                   className={`w-full pl-11 pr-4 py-3 bg-white/[0.06] border rounded-xl text-sm text-white placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 ${
                     activeRole === 'admin' ? 'focus:ring-ocean-400/40 focus:border-ocean-300' : 'focus:ring-emerald-400/40 focus:border-emerald-300'
                   } ${
@@ -321,7 +316,6 @@ export default function LoginPage() {
                   id="login-password"
                   type="password"
                   autoComplete="current-password"
-                  placeholder="Enter your password"
                   className={`w-full pl-11 pr-4 py-3 bg-white/[0.06] border rounded-xl text-sm text-white placeholder-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 ${
                     activeRole === 'admin' ? 'focus:ring-ocean-400/40 focus:border-ocean-300' : 'focus:ring-emerald-400/40 focus:border-emerald-300'
                   } ${
@@ -346,11 +340,7 @@ export default function LoginPage() {
               )}
             </div>
 
-<<<<<<< HEAD
-            {/* Login Button */}
-=======
             {/* Login Submit Button */}
->>>>>>> 619da59 (changes done)
             <button
               id="login-submit-btn"
               type="submit"
@@ -423,7 +413,6 @@ export default function LoginPage() {
                     required
                     value={resetEmail}
                     onChange={(e) => setResetEmail(e.target.value)}
-                    placeholder="admin@jenovate.com"
                     className="w-full px-4 py-3 bg-white/5 border border-white/15 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-400/40 focus:border-ocean-300"
                   />
                   <p className="text-[11px] text-gray-400 mt-1.5">
@@ -474,7 +463,6 @@ export default function LoginPage() {
                     required
                     value={resetCode}
                     onChange={(e) => setResetCode(e.target.value)}
-                    placeholder="Enter 6-digit code (e.g. 123456)"
                     className="w-full px-4 py-3 bg-white/5 border border-white/15 rounded-xl text-center text-lg font-mono tracking-widest text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-ocean-400/40 focus:border-ocean-300"
                   />
                 </div>
@@ -489,7 +477,6 @@ export default function LoginPage() {
                     minLength={6}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password (min 6 chars)"
                     className="w-full px-4 py-3 bg-white/5 border border-white/15 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-400/40 focus:border-ocean-300"
                   />
                 </div>
@@ -504,7 +491,6 @@ export default function LoginPage() {
                     minLength={6}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
                     className="w-full px-4 py-3 bg-white/5 border border-white/15 rounded-xl text-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-ocean-400/40 focus:border-ocean-300"
                   />
                 </div>
